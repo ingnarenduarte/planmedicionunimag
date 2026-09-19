@@ -99,7 +99,7 @@
         <i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform"></i>
     </button>
 
-    <!-- Botón Toggle Barra Pública (Listado de Medidores) -->
+    <!-- Botón Toggle Barra Pública -->
     <button id="btnOpenPublicSidebar" class="fixed top-1/3 left-0 -translate-y-1/2 z-20 glass bg-blue-600/80 hover:bg-blue-500 text-white p-3 md:p-4 rounded-r-2xl shadow-[5px_0_20px_rgba(59,130,246,0.4)] border-y border-r border-blue-400 interactive transition-all group cursor-pointer backdrop-blur-md flex flex-col items-center">
         <i class="fas fa-list-ul mb-1 block text-sm"></i>
         <span class="text-[9px] font-bold uppercase tracking-wider writing-vertical opacity-0 group-hover:opacity-100 transition-opacity absolute left-12 whitespace-nowrap bg-blue-900/90 px-2 py-1 rounded border border-blue-400">Medidores</span>
@@ -127,14 +127,14 @@
             <div class="max-h-[50vh] overflow-y-auto scroll px-2 bg-black/40 rounded-lg p-4 border border-white/5 text-left mb-4 space-y-2 text-xs">
                 <div class="grid grid-cols-[140px_1fr] gap-x-2 gap-y-2">
                     <span class="text-gray-400 font-bold">Estado:</span> <span id="hsModalEstadoFunc" class="text-white font-bold"></span>
-                    <span class="text-gray-400 font-bold">Cód. Hoja de Vida:</span> <span id="hsModalCodigo" class="text-white"></span>
+                    <span class="text-gray-400 font-bold">Código Hoja de Vida:</span> <span id="hsModalCodigo" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Serial Medidor:</span> <span id="hsModalSerial" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Usuario:</span> <span id="hsModalUsuario" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Sector:</span> <span id="hsModalSector" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Tipo de Medidor:</span> <span id="hsModalTipo" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Diámetro Nominal:</span> <span id="hsModalDiametro" class="text-white"></span>
                     <span class="text-gray-400 font-bold">Lectura Actual (m³):</span> <span id="hsModalLectura" class="text-white font-bold text-blue-400"></span>
-                    <span class="text-gray-400 font-bold">Consumo Acum. (m³):</span> <span id="hsModalConsumo" class="text-white font-bold text-cyan-400"></span>
+                    <span class="text-gray-400 font-bold">Consumo Acumulado (m³):</span> <span id="hsModalConsumo" class="text-white font-bold text-cyan-400"></span>
                     <span class="text-gray-400 font-bold">Fecha de Actualización:</span> <span id="hsModalFechaAct" class="text-white"></span>
                 </div>
                 <div class="border-t border-white/10 pt-2 mt-2">
@@ -165,10 +165,10 @@
             
             <div class="p-4 bg-black/60 border-b border-white/10 space-y-3 shadow-inner">
                 <div>
-                    <label class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-1 block">Búsqueda General</label>
+                    <label class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-1 block">Búsqueda Avanzada</label>
                     <div class="relative">
                         <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input id="filterSearch" type="text" placeholder="Ej. Medidor, Serial, Sector, Usuario, Lectura..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg pl-7 pr-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 transition-colors">
+                        <input id="filterSearch" type="text" placeholder="Buscar por Nombre, Serial, Sector, Usuario, Lectura..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg pl-7 pr-2 py-1.5 text-[10px] text-white outline-none focus:border-blue-500 transition-colors">
                     </div>
                 </div>
             </div>
@@ -189,6 +189,11 @@
             </div>
             
             <div class="scroll flex-1 p-4 md:p-5 space-y-5 md:space-y-6">
+                <!-- Aviso si estamos dentro de un Hotspot 360 -->
+                <div id="subsceneAdminWarning" class="hidden bg-blue-600/20 text-blue-300 p-3 text-[10px] md:text-xs text-center rounded-lg border border-blue-500/30">
+                    <i class="fas fa-info-circle mr-1"></i> Estás dentro de la vista 360° de un Medidor. Las Etiquetas que añadas se guardarán en el interior de este medidor.
+                </div>
+
                 <!-- 0. Contacto -->
                 <section>
                     <h3 class="text-xs uppercase tracking-wider text-green-400 font-bold mb-2 md:mb-3"><i class="fab fa-whatsapp mr-2"></i>Contacto Soporte / Técnico</h3>
@@ -203,7 +208,7 @@
                 <hr class="border-blue-500/20">
 
                 <!-- 1. Escenas -->
-                <section>
+                <section id="sectionEscenas">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-globe mr-2"></i>Escenas 360°</h3>
                         <button id="btnNewSceneForm" class="bg-blue-600/20 text-blue-500 hover:bg-blue-600 hover:text-white transition-colors px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border border-blue-500/30"><i class="fas fa-plus mr-1"></i>Añadir</button>
@@ -222,10 +227,10 @@
                     </div>
                     <div id="sceneListAdmin" class="space-y-2 md:space-y-3"></div>
                 </section>
-                <hr class="border-blue-500/20">
+                <hr id="hrEscenas" class="border-blue-500/20">
 
                 <!-- 2. Puntos / Hotspots (Medidores) -->
-                <section>
+                <section id="sectionMedidores">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-bullseye mr-2"></i>Puntos / Medidores</h3>
                         <button id="startHotspot" class="bg-blue-900/50 text-blue-400 hover:bg-blue-800 hover:text-white transition-colors px-3 py-1 rounded-md text-[10px] font-bold uppercase border border-blue-700/50">+ CREAR</button>
@@ -250,15 +255,15 @@
                             <div><label class="text-[10px] text-gray-400 block mb-1">Lectura Actual (m³)</label><input id="hsLectura" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                             <div><label class="text-[10px] text-gray-400 block mb-1">Consumo Acum. (m³)</label><input id="hsConsumo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                             
-                            <div class="col-span-2">
+                            <div class="col-span-2 md:col-span-1">
                                 <label class="text-[10px] text-gray-400 block mb-1">Estado del Medidor</label>
                                 <select id="hsEstadoFunc" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500">
                                     <option value="operativo">Funcionando</option>
-                                    <option value="falla">Con Fallas</option>
+                                    <option value="parado">Parado</option>
                                 </select>
                             </div>
-                            <div class="col-span-2">
-                                <label class="text-[10px] text-gray-400 block mb-1">Fecha de Última Actualización</label>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[10px] text-gray-400 block mb-1">Fecha de Actualización</label>
                                 <input id="hsFechaAct" type="date" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer">
                             </div>
                         </div>
@@ -297,10 +302,10 @@
                     </div>
                     <div id="hotspotList" class="space-y-2"></div>
                 </section>
-                <hr class="border-blue-500/20">
+                <hr id="hrMedidores" class="border-blue-500/20">
 
                 <!-- 3. Líneas Libres 3D -->
-                <section>
+                <section id="sectionLineas">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-pink-400 font-bold"><i class="fas fa-project-diagram mr-2"></i>Líneas Libres</h3>
                         <button id="startLine" class="bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white transition-colors px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border border-pink-500/30"><i class="fas fa-plus mr-1"></i>Trazar</button>
@@ -341,7 +346,7 @@
                     </div>
                     <div id="lineList" class="space-y-2"></div>
                 </section>
-                <hr class="border-blue-500/20">
+                <hr id="hrLineas" class="border-blue-500/20">
 
                 <!-- 4. Etiquetas de Texto Flotantes -->
                 <section>
@@ -358,7 +363,7 @@
                     <div id="labelForm" class="hidden bg-black/60 border border-cyan-500/40 rounded-xl p-3 mb-3 relative overflow-hidden">
                         <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
                         <label class="text-[10px] text-gray-400 block mb-1 mt-1">Contenido del Texto</label>
-                        <input id="lblContent" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-cyan-500 text-white mb-2" placeholder="Ej. Zona de Registros">
+                        <input id="lblContent" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-cyan-500 text-white mb-2" placeholder="Ej. Válvula Principal">
 
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <div>
@@ -368,6 +373,13 @@
                             <div>
                                 <label class="text-[10px] text-gray-400 block mb-1">Color Fondo</label>
                                 <input type="color" id="lblBg" value="#0f172a" class="w-full h-8 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[10px] text-gray-400 block mb-1">Estilo Visual</label>
+                                <select id="lblStyle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-500">
+                                    <option value="simple">Solo Texto (Flotante)</option>
+                                    <option value="arrow">Texto con Flecha (Apunta al lugar)</option>
+                                </select>
                             </div>
                         </div>
 
@@ -413,7 +425,7 @@
                         
                         <div class="glass rounded-full px-3 py-1.5 md:px-5 md:py-2.5 flex items-center gap-2 md:gap-3 cursor-pointer shadow-lg bg-black/60 border border-white/10 hover:bg-black/80 transition-colors" id="toggleAdminBtn">
                             <i id="modeIcon" class="fas fa-eye text-blue-400 text-xs md:text-base"></i><span id="modeText" class="hidden md:inline text-xs font-semibold text-white">Modo Público</span>
-                            <div class="w-8 h-4 md:w-10 md:h-5 rounded-full bg-gray-700 relative shadow-inner border border-gray-600"><span id="adminKnob" class="absolute top-[1px] md:top-0.5 left-[1px] md:left-0.5 w-3 h-3 md:w-4 md:h-4 bg-blue-500 rounded-full transition-all"></span></div>
+                            <div class="w-8 h-4 md:w-10 md:h-5 rounded-full bg-blue-500 relative shadow-inner border border-gray-600"><span id="adminKnob" class="absolute top-[1px] md:top-0.5 left-[1px] md:left-0.5 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full transition-all"></span></div>
                         </div>
                     </div>
                     <div id="loading" class="hidden glass rounded-full px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold text-white bg-blue-600/90 border border-blue-400 shadow-xl"><i class="fas fa-circle-notch fa-spin mr-1 md:mr-2"></i> Procesando...</div>
@@ -536,6 +548,13 @@
                         <label class="text-[10px] text-gray-400 block mb-1">Color Fondo</label>
                         <input type="color" id="editLblBg" class="w-full h-10 bg-gray-900 border border-gray-600 rounded-lg cursor-pointer">
                     </div>
+                    <div class="col-span-2">
+                        <label class="text-[10px] text-gray-400 block mb-1">Estilo Visual</label>
+                        <select id="editLblStyle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-500">
+                            <option value="simple">Solo Texto (Flotante)</option>
+                            <option value="arrow">Texto con Flecha (Apunta al lugar)</option>
+                        </select>
+                    </div>
                 </div>
                 <label class="text-[10px] text-gray-400 flex justify-between mb-1 mt-2"><span>Tamaño Letra</span><span id="valEditLblSize"></span></label>
                 <input type="range" id="editLblSize" min="8" max="48" class="w-full accent-cyan-500" oninput="document.getElementById('valEditLblSize').innerText = this.value + ' px'">
@@ -556,7 +575,7 @@
                 <div><label class="text-[10px] text-gray-400 block mb-1">Título</label><input id="editHsTitle" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
                 
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <div><label class="text-[10px] text-gray-400 block mb-1">Cód. Hoja de Vida</label><input id="editHsCodigo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Código Hoja de Vida</label><input id="editHsCodigo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                     <div><label class="text-[10px] text-gray-400 block mb-1">Serial Medidor</label><input id="editHsSerial" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                     <div><label class="text-[10px] text-gray-400 block mb-1">Usuario (Nº)</label><input id="editHsUsuario" type="number" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                     <div><label class="text-[10px] text-gray-400 block mb-1">Sector</label><input id="editHsSector" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
@@ -565,15 +584,15 @@
                     <div><label class="text-[10px] text-gray-400 block mb-1">Lectura Actual (m³)</label><input id="editHsLectura" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                     <div><label class="text-[10px] text-gray-400 block mb-1">Consumo Acum. (m³)</label><input id="editHsConsumo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                     
-                    <div class="col-span-2">
+                    <div class="col-span-2 md:col-span-1">
                         <label class="text-[10px] text-gray-400 block mb-1">Estado del Medidor</label>
                         <select id="editHsEstadoFunc" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500">
                             <option value="operativo">Funcionando</option>
-                            <option value="falla">Con Fallas</option>
+                            <option value="parado">Parado</option>
                         </select>
                     </div>
-                    <div class="col-span-2">
-                        <label class="text-[10px] text-gray-400 block mb-1">Fecha de Última Actualización</label>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-gray-400 block mb-1">Fecha de Actualización</label>
                         <input id="editHsFechaAct" type="date" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer">
                     </div>
                 </div>
@@ -653,15 +672,20 @@
         let isAdmin = false; 
         
         let isDrawingHotspot = false; let movingHotspotId = null; let pendingHotspotData = null; let editingHsId = null;
-        
         let isDrawingLine = false; let activeLinePoints = []; let activeLineMesh = null;
         let currentLineColor = '#ec4899'; let currentLineThickness = 3;
         let editingLineId = null; 
         let isEditingVerticesLine = false; let lineBeingEdited = null;
-
         let isDrawingLabel = false; let movingLabelId = null; let pendingLabelData = null; let editingLabelId = null;
         let vertexMarkers = []; let draggingMarker = null; let backupPoints = null; let editingPolygonMesh = null;
         
+        // Manejo de Sub-escenas 360 (Dentro de un medidor)
+        let inSubScene = false;
+        let currentSubSceneHotspotId = null;
+
+        let deleteType = null; let deleteId = null; 
+        let currentGallery = []; let currentGalleryIndex = 0;
+
         let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         let forcedDesktopMode = false;
         if(isMobileDevice) { $('btnToggleDeviceMode').classList.remove('hidden'); }
@@ -681,10 +705,6 @@
             }
             setTimeout(() => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }, 200);
         };
-
-        let inSubScene = false;
-        let deleteType = null; let deleteId = null; 
-        let currentGallery = []; let currentGalleryIndex = 0;
 
         function escapeHTML(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
         
@@ -751,7 +771,7 @@
                     if(data.scenes && data.scenes.length > 0) {
                         state.scenes = data.scenes.map(s => ({ ...s, lots: [] }));
                         if (!state.currentSceneId || !state.scenes.find(s => s.id === state.currentSceneId)) { state.currentSceneId = state.scenes[0].id; load360Scene(state.currentSceneId); } 
-                        else if(!inSubScene && !isEditingVerticesLine) { rebuildSceneObjects(); renderAllUI(); }
+                        else if(!isEditingVerticesLine) { rebuildSceneObjects(); renderAllUI(); }
                     } else createDefaultScene();
                 } else createDefaultScene();
             }, (error) => { console.error("Firebase Snapshot Error:", error); });
@@ -774,7 +794,8 @@
         }
 
         function load360Scene(sceneId) {
-            inSubScene = false; $('btnBackToScene').classList.add('hidden');
+            inSubScene = false; currentSubSceneHotspotId = null;
+            $('btnBackToScene').classList.add('hidden');
             if(isEditingVerticesLine) endVertexEditingLine();
             
             state.currentSceneId = sceneId; const sc = getCurrentScene(); if(!sc) return;
@@ -791,7 +812,10 @@
             });
         }
 
-        function exitHotspot360() { if(state.currentSceneId) load360Scene(state.currentSceneId); }
+        function exitHotspot360() { 
+            inSubScene = false; currentSubSceneHotspotId = null;
+            if(state.currentSceneId) load360Scene(state.currentSceneId); 
+        }
 
         function clear3D() {
             meshes.lines3D.forEach(m => { scene3D.remove(m); if(m.geometry) m.geometry.dispose(); if(m.material) m.material.dispose(); });
@@ -804,7 +828,7 @@
                 $('hsModalEstadoFunc').textContent = 'Funcionando';
                 $('hsModalEstadoFunc').className = 'text-green-400 font-bold';
             } else {
-                $('hsModalEstadoFunc').textContent = 'Con Fallas';
+                $('hsModalEstadoFunc').textContent = 'Parado';
                 $('hsModalEstadoFunc').className = 'text-red-400 font-bold';
             }
 
@@ -831,7 +855,7 @@
             const btn360 = $('hsModalBtn360');
             if (hs.url360) {
                 btn360.classList.remove('hidden');
-                btn360.onclick = () => { $('infoHotspotModal').classList.remove('active'); loadSubScene(hs.url360, hs.title); };
+                btn360.onclick = () => { $('infoHotspotModal').classList.remove('active'); loadSubScene(hs.url360, hs.title, hs.id); };
             } else {
                 btn360.classList.add('hidden');
             }
@@ -839,10 +863,44 @@
             $('infoHotspotModal').classList.add('active');
         }
 
+        function createCustomLabelElement(lbl) {
+            const el = document.createElement('div'); el.className = 'marker-container custom-label-container cursor-pointer interactive';
+            
+            if (lbl.hasArrow) {
+                el.innerHTML = `
+                    <div class="flex flex-col items-center hover:scale-105 transition-transform origin-bottom" style="pointer-events: auto;">
+                        <div style="background-color: ${lbl.bgColor}; color: ${lbl.color}; font-size: ${lbl.size}px; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); font-weight: bold; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.6);">${escapeHTML(lbl.content)}</div>
+                        <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid ${lbl.bgColor};"></div>
+                        <div style="width: 2px; height: 25px; background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${lbl.color}; box-shadow: 0 0 10px ${lbl.color}; margin-top: -4px;"></div>
+                    </div>
+                `;
+            } else {
+                el.innerHTML = `<div class="custom-label" style="background-color: ${lbl.bgColor}; color: ${lbl.color}; font-size: ${lbl.size}px;">${escapeHTML(lbl.content)}</div>`;
+            }
+            
+            if (isAdmin) { 
+                el.onclick = () => { if(!isDrawingLabel && !movingLabelId && !isDrawingLine && !isDrawingHotspot) { editingLabelId = lbl.id; populateEditLabelModal(lbl); } };
+            }
+            return el;
+        }
+
         function rebuildSceneObjects() {
             clear3D(); const sc = getCurrentScene(); if(!sc) return;
             
-            // 1. Google Maps Pin
+            // Si estamos en un sub-escena, solo renderizamos las etiquetas de esa sub-escena
+            if (inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if (hs && hs.customLabels) {
+                    hs.customLabels.forEach(lbl => {
+                        const el = createCustomLabelElement(lbl);
+                        UI.labels.appendChild(el); meshes.customLabels.push({ element: el, position: new THREE.Vector3(lbl.position.x, lbl.position.y, lbl.position.z) });
+                    });
+                }
+                return; // Cortar aquí, no renderizar objetos de la escena principal
+            }
+
+            // 1. Google Maps Pin (Solo en vista principal)
             if(sc.mapsUrl) {
                 const el = document.createElement('div'); el.className = 'marker-container pointer-events-auto cursor-pointer group';
                 el.innerHTML = `<i class="fas fa-map-marker-alt text-blue-500 map-pin"></i><div class="bg-blue-600/90 text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-blue-400">Ver Ubicación</div>`;
@@ -850,7 +908,7 @@
                 UI.labels.appendChild(el); meshes.labels.push({ element: el, position: new THREE.Vector3(0, -400, 200) });
             }
 
-            // 2. Puntos / Medidores (Hotspots)
+            // 2. Puntos / Medidores (Hotspots) (Solo en vista principal)
             if(sc.hotspots) {
                 sc.hotspots.forEach(hs => {
                     const el = document.createElement('div'); el.className = 'marker-container hotspot-container interactive cursor-pointer';
@@ -871,7 +929,7 @@
                 });
             }
 
-            // 3. Líneas 3D Guardadas
+            // 3. Líneas 3D Guardadas (Solo en vista principal)
             if(sc.lines) {
                 sc.lines.forEach(line => {
                     if(!line.points || line.points.length < 2) return;
@@ -885,15 +943,10 @@
                 });
             }
 
-            // 4. Etiquetas de Texto Flotantes
+            // 4. Etiquetas de Texto Flotantes (Solo en vista principal)
             if(sc.customLabels) {
                 sc.customLabels.forEach(lbl => {
-                    const el = document.createElement('div'); el.className = 'marker-container custom-label-container cursor-pointer interactive';
-                    el.innerHTML = `<div class="custom-label" style="background-color: ${lbl.bgColor}; color: ${lbl.color}; font-size: ${lbl.size}px;">${escapeHTML(lbl.content)}</div>`;
-                    
-                    if (isAdmin) { 
-                        el.onclick = () => { if(!isDrawingLabel && !movingLabelId && !isDrawingLine && !isDrawingHotspot) { editingLabelId = lbl.id; populateEditLabelModal(lbl); } };
-                    }
+                    const el = createCustomLabelElement(lbl);
                     UI.labels.appendChild(el); meshes.customLabels.push({ element: el, position: new THREE.Vector3(lbl.position.x, lbl.position.y, lbl.position.z) });
                 });
             }
@@ -921,11 +974,10 @@
         });
 
         renderer.domElement.addEventListener('pointermove', e => {
-            if(inSubScene) return; 
             mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
 
-            if (draggingMarker) {
+            if (draggingMarker && isAdmin) {
                 const hit = raycaster.intersectObject(sphere)[0];
                 if (hit) { 
                     draggingMarker.position.copy(hit.point); 
@@ -955,13 +1007,27 @@
             }
             
             if (isDrawingLabel || movingLabelId) {
-                if(!sc.customLabels) sc.customLabels = [];
-                if (movingLabelId) { const lbl = sc.customLabels.find(l => l.id === movingLabelId); if(lbl) lbl.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; movingLabelId = null; showToast("Etiqueta reubicada", "success"); } 
-                else { pendingLabelData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; sc.customLabels.push(pendingLabelData); showToast("Etiqueta creada", "success"); }
+                let targetArray;
+                if(inSubScene && currentSubSceneHotspotId) {
+                    const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                    if(!hs.customLabels) hs.customLabels = [];
+                    targetArray = hs.customLabels;
+                } else {
+                    if(!sc.customLabels) sc.customLabels = [];
+                    targetArray = sc.customLabels;
+                }
+
+                if (movingLabelId) { 
+                    const lbl = targetArray.find(l => l.id === movingLabelId); 
+                    if(lbl) lbl.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; movingLabelId = null; showToast("Etiqueta reubicada", "success"); 
+                } 
+                else { 
+                    pendingLabelData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; targetArray.push(pendingLabelData); showToast("Etiqueta creada", "success"); 
+                }
                 await saveStateToFirebase(); cancelLabelPlacement(); rebuildSceneObjects(); renderLabelList(); return;
             }
 
-            if (isDrawingLine) {
+            if (isDrawingLine && !inSubScene) {
                 activeLinePoints.push(hit.point.clone());
                 drawLineFeedback();
                 return;
@@ -1040,7 +1106,7 @@
             sc.hotspots.forEach(hs => {
                 const est = hs.estadoFunc || 'operativo';
                 const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
-                const estText = est === 'operativo' ? 'Funcionando' : 'Con Fallas';
+                const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
                 const hsColor = hs.color || '#3b82f6';
                 
                 const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
@@ -1116,6 +1182,35 @@
                 $('loading').classList.add('hidden');
             }
         };
+
+        function loadSubScene(url, title, hsId) {
+            inSubScene = true; 
+            currentSubSceneHotspotId = hsId;
+            $('btnBackToScene').classList.remove('hidden');
+            $('mainSceneTitle').textContent = title || "Vista Detalle 360°"; 
+            $('loading').classList.remove('hidden');
+            
+            clear3D(); 
+            
+            // Reiniciar cámara completamente para no mirar al suelo
+            controls.target.set(0, 0, -1);
+            camera.position.set(0, 0, 0.1);
+            camera.lookAt(0, 0, -1);
+            camera.fov = 70;
+            camera.updateProjectionMatrix();
+            controls.update();
+
+            texLoader.load(url, t => {
+                applyHighQualityTexture(t);
+                sphereMat.map = t; sphereMat.needsUpdate = true;
+                $('loading').classList.add('hidden'); 
+                rebuildSceneObjects();
+                renderAllUI();
+            }, undefined, () => { 
+                showToast("Error cargando el archivo 360", "error");
+                exitHotspot360();
+            });
+        }
 
         function cancelLineDraw() { isDrawingLine = false; activeLinePoints = []; $('lineDrawUI').classList.add('hidden'); $('lineForm').classList.add('hidden'); $('startLine').classList.remove('hidden'); renderer.domElement.style.cursor = 'grab'; if (activeLineMesh) { scene3D.remove(activeLineMesh); activeLineMesh = null; } $('lineName').value = ''; }
         
@@ -1212,18 +1307,33 @@
         $('startLabel').onclick = () => { cancelHotspot(); cancelLineDraw(); $('labelForm').classList.remove('hidden'); $('startLabel').classList.add('hidden'); $('lblContent').value = ''; };
         
         $('btnPrepareLabel').onclick = () => {
-            const content = $('lblContent').value.trim() || 'Texto'; const color = $('lblColor').value; const bgColor = $('lblBg').value; const size = parseInt($('lblSize').value);
-            pendingLabelData = { id: 'lbl-' + Date.now(), content, color, bgColor, size };
+            const content = $('lblContent').value.trim() || 'Texto'; 
+            const color = $('lblColor').value; 
+            const bgColor = $('lblBg').value; 
+            const size = parseInt($('lblSize').value);
+            const hasArrow = $('lblStyle').value === 'arrow';
+            pendingLabelData = { id: 'lbl-' + Date.now(), content, color, bgColor, size, hasArrow };
             $('labelForm').classList.add('hidden'); $('labelMenu').classList.remove('hidden'); isDrawingLabel = true; renderer.domElement.style.cursor = 'crosshair';
         };
         $('cancelLabel').onclick = cancelLabelPlacement; $('cancelLabelPlacement').onclick = cancelLabelPlacement;
 
         function renderLabelList() {
-            const c = $('labelList'); c.innerHTML = ''; const sc = getCurrentScene(); if (!sc.customLabels || !sc.customLabels.length) return;
-            sc.customLabels.forEach(lbl => {
+            const c = $('labelList'); c.innerHTML = ''; const sc = getCurrentScene(); 
+            
+            let targetArray = [];
+            if(inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if(hs && hs.customLabels) targetArray = hs.customLabels;
+            } else {
+                if(sc.customLabels) targetArray = sc.customLabels;
+            }
+
+            if (!targetArray.length) return;
+
+            targetArray.forEach(lbl => {
                 const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
                 div.innerHTML = `<div class="text-[11px] font-bold truncate flex-1" style="color: ${lbl.color}; background: ${lbl.bgColor}; padding: 2px 6px; border-radius: 4px;">${escapeHTML(lbl.content)}</div><div class="flex gap-1 ml-2"><button class="edit-btn text-cyan-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-edit"></i></button><button class="move-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-arrows-alt"></i></button><button class="del-btn text-red-500 p-1 hover:bg-white/10 rounded"><i class="fas fa-trash"></i></button></div>`;
-                div.querySelector('.del-btn').onclick = () => openDeleteModal('label', lbl.id, lbl.content);
+                div.querySelector('.del-btn').onclick = () => openDeleteModal(inSubScene ? 'sublabel' : 'label', lbl.id, lbl.content);
                 div.querySelector('.edit-btn').onclick = () => { populateEditLabelModal(lbl); };
                 div.querySelector('.move-btn').onclick = () => { cancelHotspot(); cancelLineDraw(); cancelLabelPlacement(); movingLabelId = lbl.id; $('labelMenu').classList.remove('hidden'); $('startLabel').classList.add('hidden'); renderer.domElement.style.cursor = 'crosshair'; };
                 c.appendChild(div);
@@ -1231,12 +1341,33 @@
         }
 
         function populateEditLabelModal(lbl) {
-            editingLabelId = lbl.id; $('editLblContent').value = lbl.content; $('editLblColor').value = lbl.color; $('editLblBg').value = lbl.bgColor; $('editLblSize').value = lbl.size || 12; $('valEditLblSize').innerText = (lbl.size||12) + ' px'; $('editLabelModal').classList.add('active');
+            editingLabelId = lbl.id; 
+            $('editLblContent').value = lbl.content; 
+            $('editLblColor').value = lbl.color; 
+            $('editLblBg').value = lbl.bgColor; 
+            $('editLblSize').value = lbl.size || 12; 
+            $('valEditLblSize').innerText = (lbl.size||12) + ' px'; 
+            $('editLblStyle').value = lbl.hasArrow ? 'arrow' : 'simple';
+            $('editLabelModal').classList.add('active');
         }
 
         $('saveEditLblBtn').onclick = async () => {
-            const sc = getCurrentScene(); const lbl = sc.customLabels.find(l => l.id === editingLabelId); if(!lbl) return;
-            lbl.content = $('editLblContent').value.trim() || 'Texto'; lbl.color = $('editLblColor').value; lbl.bgColor = $('editLblBg').value; lbl.size = parseInt($('editLblSize').value);
+            const sc = getCurrentScene(); 
+            let targetArray = [];
+            if(inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if(hs) targetArray = hs.customLabels || [];
+            } else {
+                targetArray = sc.customLabels || [];
+            }
+
+            const lbl = targetArray.find(l => l.id === editingLabelId); if(!lbl) return;
+            lbl.content = $('editLblContent').value.trim() || 'Texto'; 
+            lbl.color = $('editLblColor').value; 
+            lbl.bgColor = $('editLblBg').value; 
+            lbl.size = parseInt($('editLblSize').value);
+            lbl.hasArrow = $('editLblStyle').value === 'arrow';
+
             await saveStateToFirebase(); $('editLabelModal').classList.remove('active'); rebuildSceneObjects(); renderLabelList();
         };
 
@@ -1268,7 +1399,7 @@
                 const serialMatch = (hs.serial || '').toLowerCase().includes(query);
                 const sectorMatch = (hs.sector || '').toLowerCase().includes(query);
                 const codigoMatch = (hs.codigo || '').toLowerCase().includes(query);
-                const usuarioMatch = (hs.usuario || '').toLowerCase().includes(query);
+                const usuarioMatch = (hs.usuario || '').toString().toLowerCase().includes(query);
                 const lecturaMatch = (hs.lectura || '').toLowerCase().includes(query);
                 const consumoMatch = (hs.consumo || '').toLowerCase().includes(query);
                 
@@ -1282,7 +1413,7 @@
 
             filtered.forEach(hs => {
                 const est = hs.estadoFunc || 'operativo';
-                const estText = est === 'operativo' ? 'Funcionando' : 'Con Fallas';
+                const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
                 const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
                 const estIcon = est === 'operativo' ? 'fa-check-circle' : 'fa-exclamation-circle';
                 const hsColor = hs.color || '#3b82f6';
@@ -1328,6 +1459,25 @@
         }
 
         function renderAllUI() { 
+            // Controlar visualización de advertencia SubEscena
+            if (inSubScene) {
+                $('subsceneAdminWarning').classList.remove('hidden');
+                $('sectionEscenas').classList.add('hidden');
+                $('hrEscenas').classList.add('hidden');
+                $('sectionMedidores').classList.add('hidden');
+                $('hrMedidores').classList.add('hidden');
+                $('sectionLineas').classList.add('hidden');
+                $('hrLineas').classList.add('hidden');
+            } else {
+                $('subsceneAdminWarning').classList.add('hidden');
+                $('sectionEscenas').classList.remove('hidden');
+                $('hrEscenas').classList.remove('hidden');
+                $('sectionMedidores').classList.remove('hidden');
+                $('hrMedidores').classList.remove('hidden');
+                $('sectionLineas').classList.remove('hidden');
+                $('hrLineas').classList.remove('hidden');
+            }
+
             renderSceneListAdmin(); 
             renderPublicMedidoresList();
             renderHotspotList(); 
@@ -1388,7 +1538,14 @@
             else if (deleteType === 'hotspot') { sc.hotspots = sc.hotspots.filter(h => h.id !== deleteId); } 
             else if (deleteType === 'line') { sc.lines = sc.lines.filter(t => t.id !== deleteId); } 
             else if (deleteType === 'label') { sc.customLabels = sc.customLabels.filter(t => t.id !== deleteId); } 
-            saveStateToFirebase(); load360Scene(state.currentSceneId); $('deleteModal').classList.remove('active'); 
+            else if (deleteType === 'sublabel') { 
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if (hs && hs.customLabels) hs.customLabels = hs.customLabels.filter(t => t.id !== deleteId);
+            }
+            saveStateToFirebase(); 
+            rebuildSceneObjects(); 
+            renderAllUI();
+            $('deleteModal').classList.remove('active'); 
         };
 
         $('btnOpenPublicSidebar').onclick = () => { 
