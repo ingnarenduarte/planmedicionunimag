@@ -280,6 +280,16 @@
                             <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Imagen 360° (Destino)</label>
                             <input type="file" id="hs360File" accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
                             <input id="hs360Url" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-purple-500 text-white" placeholder="O pega URL de la imagen 360°">
+                            
+                            <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (CREAR) -->
+                            <div class="border-t border-purple-500/20 pt-2 mt-2">
+                                <label class="text-[10px] text-purple-400 flex justify-between mb-1">
+                                    <span>Calibrar Norte 360°</span>
+                                    <span id="valHsRot360">0°</span>
+                                </label>
+                                <input type="range" id="hsRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valHsRot360').innerText = this.value + '°';">
+                            </div>
+
                         </div>
 
                         <!-- Icono y Color -->
@@ -498,6 +508,16 @@
                 <div><label class="text-[10px] text-gray-400 block mb-1">Nombre Escena</label><input id="editScName" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
                 <div><label class="text-[10px] text-gray-400 block mb-1">Cambiar Foto 360° (Opcional)</label><input type="file" id="editScFile" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 cursor-pointer mb-2"></div>
                 <div><label class="text-[10px] text-gray-400 block mb-1"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i> Link Google Maps</label><input id="editScMaps" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
+                
+                <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (ESCENA PRINCIPAL) -->
+                <div class="border-t border-white/10 pt-2 mt-2">
+                    <label class="text-[10px] text-gray-400 flex justify-between mb-1">
+                        <span>Calibrar Norte (Girar imagen)</span>
+                        <span id="valEditScRot">0°</span>
+                    </label>
+                    <input type="range" id="editScRot" min="-180" max="180" value="0" class="w-full accent-blue-500" oninput="document.getElementById('valEditScRot').innerText = this.value + '°'; if(window.sphere) window.sphere.rotation.y = this.value * (Math.PI / 180);">
+                </div>
+
                 <div class="flex gap-2 mt-5 md:mt-6">
                     <button onclick="document.getElementById('editSceneModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
                     <button id="saveEditScBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
@@ -609,6 +629,15 @@
                     <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Cambiar Escena 360°</label>
                     <input type="file" id="editHs360File" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
                     <input id="editHs360Url" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-xs text-white focus:border-purple-500 outline-none" placeholder="O pega URL 360°">
+
+                    <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (EDITAR MEDIDOR) -->
+                    <div class="border-t border-purple-500/20 pt-2 mt-2">
+                        <label class="text-[10px] text-purple-400 flex justify-between mb-1">
+                            <span>Calibrar Norte 360°</span>
+                            <span id="valEditHsRot360">0°</span>
+                        </label>
+                        <input type="range" id="editHsRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valEditHsRot360').innerText = this.value + '°'; if(typeof sphere !== 'undefined' && inSubScene && currentSubSceneHotspotId === editingHsId) sphere.rotation.y = this.value * (Math.PI / 180);">
+                    </div>
                 </div>
 
                 <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20 mt-2 grid grid-cols-2 gap-2">
@@ -755,6 +784,9 @@
         const sphereMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         const sphere = new THREE.Mesh(sphereGeo, sphereMat); scene3D.add(sphere);
         
+        // PASO 1 INTERNO: Hacer la esfera accesible globalmente
+        window.sphere = sphere;
+        
         const texLoader = new THREE.TextureLoader(); texLoader.setCrossOrigin('anonymous');
         const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
         
@@ -805,6 +837,12 @@
             texLoader.load(sc.url || DEFAULT_360, t => {
                 applyHighQualityTexture(t);
                 sphereMat.map = t; sphereMat.needsUpdate = true;
+                
+                // --- Aplicar calibración del norte a la escena principal ---
+                if (window.sphere) {
+                    window.sphere.rotation.y = (sc.rotation || 0) * (Math.PI / 180);
+                }
+                
                 $('loading').classList.add('hidden'); rebuildSceneObjects(); renderAllUI();
             }, undefined, () => { 
                 sphereMat.map = null; $('loading').classList.add('hidden'); rebuildSceneObjects(); renderAllUI(); 
@@ -1050,6 +1088,10 @@
             $('hsColor').value = '#3b82f6';
             $('hsGalleryFiles').value = ''; $('hs360File').value = ''; $('hs360Url').value = '';
             $('hsIconFile').value = ''; $('hsIconUrl').value = '';
+            
+            // Limpiar slider de calibración al crear
+            if($('hsRot360')) { $('hsRot360').value = 0; $('valHsRot360').innerText = '0°'; }
+
             $('hotspotForm').classList.remove('hidden'); $('startHotspot').classList.add('hidden'); 
         };
 
@@ -1083,10 +1125,12 @@
                 let url360 = $('hs360Url').value.trim();
                 if($('hs360File').files[0]) url360 = await uploadImageToImgBB($('hs360File').files[0]);
 
+                const rot360 = parseInt($('hsRot360').value) || 0;
+
                 pendingHotspotData = { 
                     id: 'hs-' + Date.now(), 
                     title, codigo, serial, usuario, sector, tipo, diametro, lectura, consumo, estadoFunc, fechaAct, color, obs, 
-                    icon, galleryUrls, url360 
+                    icon, galleryUrls, url360, rot360 
                 };
                 $('hotspotForm').classList.add('hidden'); $('hotspotMenu').classList.remove('hidden'); 
                 isDrawingHotspot = true; renderer.domElement.style.cursor = 'crosshair';
@@ -1132,6 +1176,9 @@
                     $('editHsGalleryFiles').value = '';
                     $('editHs360File').value = '';
                     $('editHs360Url').value = hs.url360 || '';
+
+                    $('editHsRot360').value = hs.rot360 || 0;
+                    $('valEditHsRot360').innerText = (hs.rot360 || 0) + '°';
                     
                     $('editHotspotModal').classList.add('active'); 
                 };
@@ -1174,6 +1221,8 @@
                 if($('editHs360File').files[0]) url360 = await uploadImageToImgBB($('editHs360File').files[0]);
                 if(url360 !== undefined && url360 !== '') hs.url360 = url360;
 
+                hs.rot360 = parseInt($('editHsRot360').value) || 0;
+
                 await saveStateToFirebase(); $('editHotspotModal').classList.remove('active'); rebuildSceneObjects(); renderHotspotList(); 
             } catch(e) {
                 showToast("Error guardando el medidor", "error");
@@ -1202,6 +1251,14 @@
             texLoader.load(url, t => {
                 applyHighQualityTexture(t);
                 sphereMat.map = t; sphereMat.needsUpdate = true;
+                
+                // --- Aplicar calibración del norte ---
+                const sc = getCurrentScene();
+                const hs = sc.hotspots.find(h => h.id === hsId);
+                if (typeof sphere !== 'undefined') {
+                    sphere.rotation.y = (hs && hs.rot360 ? hs.rot360 : 0) * (Math.PI / 180);
+                }
+                
                 $('loading').classList.add('hidden'); 
                 rebuildSceneObjects();
                 renderAllUI();
@@ -1491,7 +1548,16 @@
                 const isActive = sc.id === state.currentSceneId; const div = document.createElement('div');
                 div.className = `flex items-center justify-between p-2 rounded-xl border ${isActive ? 'bg-blue-600/30 border-blue-500/50' : 'bg-white/5 border-white/10 hover:bg-white/10'} transition-colors cursor-pointer`;
                 div.innerHTML = `<div class="flex-1 overflow-hidden" onclick="load360Scene('${sc.id}')"><div class="text-xs font-bold text-white truncate">${escapeHTML(sc.name)}</div></div><div class="flex gap-1"><button class="edit-btn text-blue-400 hover:text-white p-2"><i class="fas fa-edit"></i></button>${state.scenes.length > 1 ? `<button class="del-btn text-red-400 hover:text-white p-2"><i class="fas fa-trash"></i></button>` : ''}</div>`;
-                div.querySelector('.edit-btn').onclick = (e) => { e.stopPropagation(); $('editScName').value = sc.name; $('editScMaps').value = sc.mapsUrl || ''; $('editScFile').value = ''; state._editingSceneId = sc.id; $('editSceneModal').classList.add('active'); };
+                div.querySelector('.edit-btn').onclick = (e) => { 
+                    e.stopPropagation(); 
+                    $('editScName').value = sc.name; 
+                    $('editScMaps').value = sc.mapsUrl || ''; 
+                    $('editScFile').value = ''; 
+                    $('editScRot').value = sc.rotation || 0;
+                    $('valEditScRot').innerText = (sc.rotation || 0) + '°';
+                    state._editingSceneId = sc.id; 
+                    $('editSceneModal').classList.add('active'); 
+                };
                 if(state.scenes.length > 1) div.querySelector('.del-btn').onclick = (e) => { e.stopPropagation(); openDeleteModal('scene', sc.id, sc.name); };
                 c.appendChild(div);
             });
@@ -1499,7 +1565,10 @@
 
         $('saveEditScBtn').onclick = async () => {
             const sc = state.scenes.find(s => s.id === state._editingSceneId); if(!sc) return;
-            sc.name = $('editScName').value.trim(); sc.mapsUrl = $('editScMaps').value.trim(); const file =$('editScFile').files[0];
+            sc.name = $('editScName').value.trim(); 
+            sc.mapsUrl = $('editScMaps').value.trim(); 
+            sc.rotation = parseInt($('editScRot').value) || 0;
+            const file =$('editScFile').files[0];
             try { 
                 $('loading').classList.remove('hidden'); 
                 if(file) { sc.url = await uploadImageToImgBB(file); }
