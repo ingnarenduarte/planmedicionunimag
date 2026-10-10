@@ -10,6 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
@@ -31,15 +32,18 @@
         .marker-container { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 10; }
         .map-pin { font-size: 36px; text-shadow: 0 4px 10px rgba(0,0,0,0.6); margin-bottom: 2px; animation: float-pin 2s ease-in-out infinite; }
         
+        /* Animaciones Puntos Interactivos */
         .hotspot-icon { font-size: 32px; text-shadow: 0 4px 15px rgba(0,0,0,0.8); transition: transform 0.2s; }
         .hotspot-container:hover .hotspot-icon { transform: scale(1.15) translateY(-5px); }
         .hotspot-pulse { position: absolute; width: 30px; height: 30px; border-radius: 50%; z-index: -1; animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping-slow { 75%, 100% { transform: scale(2); opacity: 0; } }
         @keyframes float-pin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
+        /* Etiquetas Ocultas por Defecto */
         .label3d { display: flex; flex-direction: column; align-items: center; background: transparent; border-radius: 12px; pointer-events: auto; transition: transform 0.2s; }
         .label3d:hover { transform: scale(1.05); }
 
+        /* Etiqueta de Texto Manual (Custom Label) */
         .custom-label { background: rgba(15,23,42,0.9); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.5); pointer-events: auto; font-weight: bold; white-space: nowrap; transition: transform 0.2s; }
         .custom-label:hover { transform: scale(1.05); }
         
@@ -65,11 +69,13 @@
     <div id="canvas"></div>
     <div id="labels" class="fixed inset-0 z-10 pointer-events-none overflow-hidden"></div>
     
+    <!-- Brújula Dinámica -->
     <div id="compass" class="fixed top-24 right-4 md:right-6 w-12 h-12 md:w-14 md:h-14 glass rounded-full flex flex-col items-center justify-center z-20 shadow-2xl pointer-events-none border border-blue-500/40 bg-black/60">
         <span class="text-[9px] md:text-[10px] font-bold text-blue-500 mb-0.5 leading-none">N</span>
         <i id="compassNeedle" class="fas fa-location-arrow text-white text-lg md:text-xl transform -rotate-45 transition-transform duration-75 origin-center"></i>
     </div>
 
+    <!-- Controles Flotantes para Edición de Vértices de Líneas -->
     <div id="vertexEditUI" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 interactive glass px-4 py-3 rounded-2xl flex flex-col md:flex-row gap-3 items-center border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] w-[95%] md:w-auto">
         <div class="flex flex-col text-center md:text-left">
             <span class="text-[11px] text-blue-400 font-bold uppercase tracking-widest" id="vertexEditTitle"><i class="fas fa-hand-pointer mr-1"></i> Editando Vértices de Línea</span>
@@ -87,37 +93,30 @@
         </button>
     </div>
     
+    <!-- Botón Toggle Barra Admin -->
     <button id="btnMaximizeAdmin" class="hidden fixed top-1/2 left-0 -translate-y-1/2 z-40 glass bg-blue-600 hover:bg-blue-500 text-white p-3 md:p-4 rounded-r-2xl shadow-[5px_0_20px_rgba(59,130,246,0.4)] border-y border-r border-blue-400 interactive transition-all group">
         <i class="fas fa-tools mb-1 block text-xs"></i>
         <i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform"></i>
     </button>
 
+    <!-- Botón Toggle Barra Pública -->
     <button id="btnOpenPublicSidebar" class="fixed top-1/3 left-0 -translate-y-1/2 z-20 glass bg-blue-600/80 hover:bg-blue-500 text-white p-3 md:p-4 rounded-r-2xl shadow-[5px_0_20px_rgba(59,130,246,0.4)] border-y border-r border-blue-400 interactive transition-all group cursor-pointer backdrop-blur-md flex flex-col items-center">
         <i class="fas fa-list-ul mb-1 block text-sm"></i>
         <span class="text-[9px] font-bold uppercase tracking-wider writing-vertical opacity-0 group-hover:opacity-100 transition-opacity absolute left-12 whitespace-nowrap bg-blue-900/90 px-2 py-1 rounded border border-blue-400">Medidores</span>
     </button>
 
-    <!-- CARRUSEL GALERÍA (con botones admin) -->
+    <!-- Carrusel Galería (Pantalla Completa) -->
     <div id="fullGalleryModal" class="modal-overlay interactive" onclick="if(event.target === this) this.classList.remove('active')">
         <div class="relative w-full h-full flex items-center justify-center p-2 md:p-4">
             <img id="fullGalleryImg" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border-2 border-blue-500/50" style="image-rendering: -webkit-optimize-contrast;">
             <div id="galleryCounter" class="absolute top-4 left-4 bg-black/80 px-4 py-1.5 rounded-full text-xs font-bold border border-blue-500/30 text-white shadow-lg"></div>
             <button id="btnPrevImg" class="absolute top-1/2 left-2 md:left-4 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 glass bg-black/60 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-xl"><i class="fas fa-chevron-left text-xl md:text-2xl text-white"></i></button>
             <button id="btnNextImg" class="absolute top-1/2 right-2 md:right-4 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 glass bg-black/60 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-xl"><i class="fas fa-chevron-right text-xl md:text-2xl text-white"></i></button>
-            
-            <button id="btnDeleteGalleryImg" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-red-400 transition-colors z-10">
-                <i class="fas fa-trash-alt mr-1"></i> Eliminar esta imagen
-            </button>
-            <button id="btnAddGalleryImg" class="hidden absolute bottom-4 right-4 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-green-400 transition-colors z-10">
-                <i class="fas fa-plus mr-1"></i> Añadir imagen
-            </button>
-            <input type="file" id="galleryAdminInput" accept="image/jpeg, image/png, image/webp" multiple class="hidden">
-
             <button class="absolute top-4 right-4 text-white bg-red-600 hover:bg-red-500 rounded-full w-10 h-10 md:w-12 md:h-12 flex items-center justify-center transition-colors shadow-xl border border-red-400" onclick="document.getElementById('fullGalleryModal').classList.remove('active')"><i class="fas fa-times text-lg md:text-xl"></i></button>
         </div>
     </div>
 
-    <!-- INFO HOTSPOT MODAL -->
+    <!-- Info Hotspot Modal (Ficha del Medidor) -->
     <div id="infoHotspotModal" class="modal-overlay interactive" onclick="if(event.target === this) this.classList.remove('active')">
         <div class="glass rounded-2xl p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90 text-center">
             <div id="hsModalIconContainer" class="w-16 h-16 mx-auto rounded-full bg-blue-900/50 border border-blue-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] mb-4 overflow-hidden">
@@ -154,6 +153,7 @@
 
     <div id="ui" class="flex">
         
+        <!-- BARRA LATERAL PÚBLICA (Listado de Medidores) -->
         <aside id="publicSidebar" class="sidebar glass z-50 border-r border-blue-500/30 shadow-[10px_0_30px_rgba(0,0,0,0.5)] bg-slate-900/95">
             <div class="p-4 md:p-5 border-b border-blue-500/30 flex items-center justify-between bg-black/40 backdrop-blur-md">
                 <div>
@@ -173,9 +173,12 @@
                 </div>
             </div>
 
-            <div class="scroll flex-1 p-3 md:p-4 space-y-3" id="publicMedidoresList"></div>
+            <div class="scroll flex-1 p-3 md:p-4 space-y-3" id="publicMedidoresList">
+                <!-- Tarjetas dinámicas de medidores -->
+            </div>
         </aside>
 
+        <!-- BARRA LATERAL ADMIN -->
         <aside id="sidebar" class="sidebar glass z-50 border-r border-blue-500/20 bg-slate-900/95">
             <div class="p-4 md:p-5 border-b border-blue-500/20 flex items-center justify-between bg-black/60">
                 <div>
@@ -186,10 +189,12 @@
             </div>
             
             <div class="scroll flex-1 p-4 md:p-5 space-y-5 md:space-y-6">
+                <!-- Aviso si estamos dentro de un Hotspot 360 -->
                 <div id="subsceneAdminWarning" class="hidden bg-blue-600/20 text-blue-300 p-3 text-[10px] md:text-xs text-center rounded-lg border border-blue-500/30">
                     <i class="fas fa-info-circle mr-1"></i> Estás dentro de la vista 360° de un Medidor. Las Etiquetas que añadas se guardarán en el interior de este medidor.
                 </div>
 
+                <!-- 0. Contacto -->
                 <section>
                     <h3 class="text-xs uppercase tracking-wider text-green-400 font-bold mb-2 md:mb-3"><i class="fab fa-whatsapp mr-2"></i>Contacto Soporte / Técnico</h3>
                     <div class="bg-black/50 border border-green-500/30 rounded-xl p-3 shadow-inner">
@@ -202,6 +207,7 @@
                 </section>
                 <hr class="border-blue-500/20">
 
+                <!-- 1. Escenas -->
                 <section id="sectionEscenas">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-globe mr-2"></i>Escenas 360°</h3>
@@ -223,6 +229,7 @@
                 </section>
                 <hr id="hrEscenas" class="border-blue-500/20">
 
+                <!-- 2. Puntos / Hotspots (Medidores) -->
                 <section id="sectionMedidores">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-bullseye mr-2"></i>Puntos / Medidores</h3>
@@ -237,6 +244,7 @@
                         <label class="text-[10px] text-gray-400 block mb-1 mt-1">Título del Hotspot</label>
                         <input id="hsTitle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 text-white mb-2" placeholder="Ej. Medidor Sector Norte">
                         
+                        <!-- Campos solicitados para Medidores -->
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <div><label class="text-[10px] text-gray-400 block mb-1">Código Hoja de Vida</label><input id="hsCodigo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                             <div><label class="text-[10px] text-gray-400 block mb-1">Serial Medidor</label><input id="hsSerial" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
@@ -264,6 +272,7 @@
                             <textarea id="hsObs" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 resize-none"></textarea>
                         </div>
 
+                        <!-- Galería y 360 -->
                         <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20 mb-2">
                             <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería de Imágenes Normales</label>
                             <input type="file" id="hsGalleryFiles" multiple accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
@@ -272,6 +281,7 @@
                             <input type="file" id="hs360File" accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
                             <input id="hs360Url" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-purple-500 text-white" placeholder="O pega URL de la imagen 360°">
                             
+                            <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (CREAR) -->
                             <div class="border-t border-purple-500/20 pt-2 mt-2">
                                 <label class="text-[10px] text-purple-400 flex justify-between mb-1">
                                     <span>Calibrar Norte 360°</span>
@@ -279,8 +289,10 @@
                                 </label>
                                 <input type="range" id="hsRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valHsRot360').innerText = this.value + '°';">
                             </div>
+
                         </div>
 
+                        <!-- Icono y Color -->
                         <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20 mb-1 grid grid-cols-2 gap-2">
                             <div class="col-span-2 md:col-span-1">
                                 <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-image mr-1"></i>Icono (Opcional)</label>
@@ -294,14 +306,15 @@
                         </div>
 
                         <div class="flex gap-2 mt-3">
-                          <button id="btnPrepareHotspot" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Posicionar</button>
+                            <button id="btnPrepareHotspot" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Posicionar</button>
                             <button id="cancelHotspot" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
                         </div>
                     </div>
                     <div id="hotspotList" class="space-y-2"></div>
                 </section>
-                                <hr id="hrMedidores" class="border-blue-500/20">
+                <hr id="hrMedidores" class="border-blue-500/20">
 
+                <!-- 3. Líneas Libres 3D -->
                 <section id="sectionLineas">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-pink-400 font-bold"><i class="fas fa-project-diagram mr-2"></i>Líneas Libres</h3>
@@ -345,6 +358,7 @@
                 </section>
                 <hr id="hrLineas" class="border-blue-500/20">
 
+                <!-- 4. Etiquetas de Texto Flotantes -->
                 <section>
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-cyan-400 font-bold"><i class="fas fa-tag mr-2"></i>Etiquetas de Texto</h3>
@@ -398,6 +412,7 @@
             </div>
         </aside>
         
+        <!-- UI PRINCIPAL -->
         <main class="flex-1 p-3 md:p-4 relative z-20 flex flex-col justify-between pointer-events-none w-full h-full">
             <div class="flex items-start justify-between w-full pointer-events-auto">
                 <div class="flex flex-col gap-2 md:gap-3 w-1/2 md:w-auto ml-16 md:ml-0">
@@ -413,6 +428,7 @@
                 
                 <div class="flex flex-col items-end gap-2 md:gap-3 interactive mt-1 md:mr-16">
                     <div class="flex items-center gap-2">
+                        <!-- Botón Modo Escritorio/Movil -->
                         <button id="btnToggleDeviceMode" class="hidden glass rounded-full w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-white shadow-lg bg-black/60 border border-white/10 hover:bg-black/80 transition-colors" title="Cambiar Vista">
                             <i class="fas fa-desktop text-sm"></i>
                         </button>
@@ -444,6 +460,7 @@
         </main>
     </div>
 
+    <!-- Login Modal -->
     <div id="loginModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-6 md:p-8 w-[95%] max-w-sm border border-blue-500/40 shadow-2xl bg-black/90" id="loginBox">
             <div class="text-center mb-5 md:mb-6">
@@ -462,6 +479,7 @@
         </div>
     </div>
 
+    <!-- Modal Cambiar Contraseña -->
     <div id="changePwdModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
             <h2 class="text-base md:text-lg font-bold text-white mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-key text-blue-500 mr-2"></i> Cambiar Contraseña</h2>
@@ -482,6 +500,7 @@
         </div>
     </div>
 
+    <!-- Modal Editar Escena -->
     <div id="editSceneModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
             <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-globe text-blue-500 mr-2"></i> Editar Escena</h2>
@@ -490,6 +509,7 @@
                 <div><label class="text-[10px] text-gray-400 block mb-1">Cambiar Foto 360° (Opcional)</label><input type="file" id="editScFile" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 cursor-pointer mb-2"></div>
                 <div><label class="text-[10px] text-gray-400 block mb-1"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i> Link Google Maps</label><input id="editScMaps" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
                 
+                <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (ESCENA PRINCIPAL) -->
                 <div class="border-t border-white/10 pt-2 mt-2">
                     <label class="text-[10px] text-gray-400 flex justify-between mb-1">
                         <span>Calibrar Norte (Girar imagen)</span>
@@ -506,6 +526,7 @@
         </div>
     </div>
 
+    <!-- Modal Editar Líneas -->
     <div id="editLineModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-pink-500/30 shadow-2xl bg-black/90">
             <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-pink-500/30 pb-2"><i class="fas fa-project-diagram text-pink-500 mr-2"></i> Editar Línea</h2>
@@ -532,6 +553,7 @@
         </div>
     </div>
 
+    <!-- Modal Editar Etiqueta (HTML) -->
     <div id="editLabelModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-cyan-500/30 shadow-2xl bg-black/90">
             <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-cyan-500/30 pb-2"><i class="fas fa-tag text-cyan-500 mr-2"></i> Editar Etiqueta</h2>
@@ -565,6 +587,7 @@
         </div>
     </div>
 
+    <!-- Modal Editar Hotspot (Medidor) -->
     <div id="editHotspotModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
             <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-bullseye text-blue-500 mr-2"></i> Editar Medidor</h2>
@@ -599,9 +622,1125 @@
                     <textarea id="editHsObs" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"></textarea>
                 </div>
 
-                <!-- GALERÍA CON MINIATURAS Y BOTÓN BORRAR (ADMIN) -->
                 <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20">
-                    <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería de Imágenes</label>
-                    <div id="editHsGalleryThumbs" class="flex flex-wrap gap-2 mb-2"></div>
-                    <input type="file" id="editHsGalleryFiles" multiple accept="image/jpeg, image/png, image/webp" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
-                    <hr class
+                    <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Añadir a Galería</label>
+                    <input type="file" id="editHsGalleryFiles" multiple accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                    <hr class="border-indigo-500/20 my-2">
+                    <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Cambiar Escena 360°</label>
+                    <input type="file" id="editHs360File" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                    <input id="editHs360Url" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-xs text-white focus:border-purple-500 outline-none" placeholder="O pega URL 360°">
+
+                    <!-- NUEVO: SLIDER CALIBRAR NORTE 360 (EDITAR MEDIDOR) -->
+                    <div class="border-t border-purple-500/20 pt-2 mt-2">
+                        <label class="text-[10px] text-purple-400 flex justify-between mb-1">
+                            <span>Calibrar Norte 360°</span>
+                            <span id="valEditHsRot360">0°</span>
+                        </label>
+                        <input type="range" id="editHsRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valEditHsRot360').innerText = this.value + '°'; if(typeof sphere !== 'undefined' && inSubScene && currentSubSceneHotspotId === editingHsId) sphere.rotation.y = this.value * (Math.PI / 180);">
+                    </div>
+                </div>
+
+                <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20 mt-2 grid grid-cols-2 gap-2">
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-image mr-1"></i>Cambiar Icono</label>
+                        <input type="file" id="editHsIconFile" accept="image/jpeg, image/png, image/svg+xml" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                        <input id="editHsIconUrl" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none" placeholder="URL del icono">
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-palette mr-1"></i>Color Principal</label>
+                        <input type="color" id="editHsColor" class="w-full h-10 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                    </div>
+                </div>
+
+            </div>
+            <div class="flex gap-2 mt-5 md:mt-6 border-t border-white/10 pt-3">
+                <button onclick="document.getElementById('editHotspotModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                <button id="saveEditHsBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Borrar -->
+    <div id="deleteModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-xs text-center border border-red-500/30 bg-black/90">
+            <div class="w-14 h-14 md:w-16 md:h-16 mx-auto rounded-full bg-red-600/20 flex items-center justify-center mb-4"><i class="fas fa-trash-alt text-xl md:text-2xl text-red-500"></i></div>
+            <h3 id="deleteTitle" class="text-base md:text-lg font-bold text-white mb-2">¿Eliminar?</h3>
+            <p id="deleteDesc" class="text-[10px] md:text-xs text-gray-400 mb-5 md:mb-6">Esta acción es irreversible.</p>
+            <div class="flex gap-2">
+                <button id="cancelDeleteBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 md:py-2.5 text-xs md:text-sm font-bold">Cancelar</button>
+                <button id="confirmDeleteBtn" class="flex-1 bg-red-600 hover:bg-red-500 text-white rounded-lg py-2 md:py-2.5 text-xs md:text-sm font-bold shadow-lg">Sí, Eliminar</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="toast-container"></div>
+
+    <script>
+        const ADMIN_PASSWORD = "Duarte.03";
+        const DEFAULT_360 = "https://raw.githubusercontent.com/aframevr/aframe/master/examples/boilerplate/panorama/puydesancy.jpg";
+        
+        const IMGBB_API_KEY = "326a754565ffcd8139d89f15bd8df6e7";
+        const firebaseConfig = {
+            apiKey: "AIzaSyC0ZQaAWn8fAUiitkVyDrrXEz3v4Y7twkc",
+            authDomain: "medidoresunimag.firebaseapp.com",
+            projectId: "medidoresunimag",
+            storageBucket: "medidoresunimag.firebasestorage.app",
+            messagingSenderId: "288162607432",
+            appId: "1:288162607432:web:358537602fd18de751437d",
+            measurementId: "G-XJ1TZ3LYX4"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let state = { scenes: [], currentSceneId: null, contact: { name: 'Soporte Técnico', phone: '573206658864' }, adminPassword: ADMIN_PASSWORD };
+        const $ = id => document.getElementById(id);
+        const UI = { canvas: $('canvas'), labels: $('labels') };
+        
+        let isAdmin = false; 
+        
+        let isDrawingHotspot = false; let movingHotspotId = null; let pendingHotspotData = null; let editingHsId = null;
+        let isDrawingLine = false; let activeLinePoints = []; let activeLineMesh = null;
+        let currentLineColor = '#ec4899'; let currentLineThickness = 3;
+        let editingLineId = null; 
+        let isEditingVerticesLine = false; let lineBeingEdited = null;
+        let isDrawingLabel = false; let movingLabelId = null; let pendingLabelData = null; let editingLabelId = null;
+        let vertexMarkers = []; let draggingMarker = null; let backupPoints = null; let editingPolygonMesh = null;
+        
+        // Manejo de Sub-escenas 360 (Dentro de un medidor)
+        let inSubScene = false;
+        let currentSubSceneHotspotId = null;
+
+        let deleteType = null; let deleteId = null; 
+        let currentGallery = []; let currentGalleryIndex = 0;
+
+        let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let forcedDesktopMode = false;
+        if(isMobileDevice) { $('btnToggleDeviceMode').classList.remove('hidden'); }
+
+        $('btnToggleDeviceMode').onclick = () => {
+            forcedDesktopMode = !forcedDesktopMode;
+            const vp = $('viewportMeta');
+            const icon = $('btnToggleDeviceMode').querySelector('i');
+            if(forcedDesktopMode) {
+                vp.setAttribute('content', 'width=1280, initial-scale=0.25, maximum-scale=3.0');
+                icon.className = 'fas fa-mobile-alt text-sm';
+                showToast("Modo Escritorio Forzado", "info");
+            } else {
+                vp.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no');
+                icon.className = 'fas fa-desktop text-sm';
+                showToast("Modo Móvil Activado", "info");
+            }
+            setTimeout(() => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }, 200);
+        };
+
+        function escapeHTML(s) { return String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
+        
+        $('filterSearch').addEventListener('input', renderPublicMedidoresList);
+
+        function showToast(msg, type = "info") {
+            const c = $('toast-container'); const t = document.createElement('div'); t.className = 'toast flex items-center gap-2 border-l-4';
+            let icon = '<i class="fas fa-info-circle text-blue-400"></i>';
+            if(type === 'success') { icon = '<i class="fas fa-check-circle text-green-400"></i>'; t.classList.add('border-green-500'); }
+            else if(type === 'error') { icon = '<i class="fas fa-exclamation-circle text-red-400"></i>'; t.classList.add('border-red-500'); }
+            else { t.classList.add('border-blue-500'); }
+            t.innerHTML = `${icon} <span class="truncate">${escapeHTML(msg)}</span>`;
+            c.appendChild(t);
+            setTimeout(() => { t.style.animation = 'toast-in 0.3s reverse forwards'; setTimeout(() => t.remove(), 300); }, 3000);
+        }
+
+        async function uploadImageToImgBB(file) {
+            const formData = new FormData(); formData.append('image', file);
+            const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) return data.data.url;
+            throw new Error(`ImgBB Error: ${data.error ? data.error.message : 'Error'}`);
+        }
+
+        async function saveStateToFirebase() {
+            try { $('loading').classList.remove('hidden'); await db.collection('visor').doc('data').set({ scenes: state.scenes, contact: state.contact, adminPassword: state.adminPassword }); $('loading').classList.add('hidden'); } 
+            catch(e) { console.error(e); showToast("Error de nube.", "error"); $('loading').classList.add('hidden'); }
+        }
+
+        const scene3D = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000); 
+        camera.position.set(0, 0, 0.1);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        renderer.outputEncoding = THREE.sRGBEncoding; 
+        renderer.setSize(window.innerWidth, window.innerHeight); 
+        renderer.setPixelRatio(window.devicePixelRatio);
+        UI.canvas.appendChild(renderer.domElement);
+        
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enablePan = false; controls.enableZoom = false; controls.enableDamping = true; controls.dampingFactor = 0.05;
+
+        renderer.domElement.addEventListener('wheel', (e) => { camera.fov += e.deltaY * 0.05; camera.fov = Math.max(20, Math.min(100, camera.fov)); camera.updateProjectionMatrix(); }, {passive: true});
+        let touchStartDist = 0; let initialFov = 0;
+        renderer.domElement.addEventListener('touchstart', (e) => { if (e.touches.length === 2) { touchStartDist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); initialFov = camera.fov; } }, {passive: true});
+        renderer.domElement.addEventListener('touchmove', (e) => { if (e.touches.length === 2) { const dist = Math.hypot(e.touches[0].pageX - e.touches[1].pageX, e.touches[0].pageY - e.touches[1].pageY); camera.fov = initialFov + (touchStartDist - dist) * 0.1; camera.fov = Math.max(20, Math.min(100, camera.fov)); camera.updateProjectionMatrix(); } }, {passive: true});
+
+        const sphereGeo = new THREE.SphereGeometry(500, 128, 96); sphereGeo.scale(-1, 1, 1);
+        const sphereMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const sphere = new THREE.Mesh(sphereGeo, sphereMat); scene3D.add(sphere);
+        
+        // PASO 1 INTERNO: Hacer la esfera accesible globalmente
+        window.sphere = sphere;
+        
+        const texLoader = new THREE.TextureLoader(); texLoader.setCrossOrigin('anonymous');
+        const raycaster = new THREE.Raycaster(); const mouse = new THREE.Vector2();
+        
+        const meshes = { labels: [], customLabels: [], lines3D: [] };
+
+        async function initData() {
+            $('mainSceneTitle').textContent = "Conectando...";
+            db.collection('visor').doc('data').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if(data.contact) state.contact = data.contact; updateContactUI();
+                    if(data.adminPassword) state.adminPassword = data.adminPassword;
+                    if(data.scenes && data.scenes.length > 0) {
+                        state.scenes = data.scenes.map(s => ({ ...s, lots: [] }));
+                        if (!state.currentSceneId || !state.scenes.find(s => s.id === state.currentSceneId)) { state.currentSceneId = state.scenes[0].id; load360Scene(state.currentSceneId); } 
+                        else if(!isEditingVerticesLine) { rebuildSceneObjects(); renderAllUI(); }
+                    } else createDefaultScene();
+                } else createDefaultScene();
+            }, (error) => { console.error("Firebase Snapshot Error:", error); });
+        }
+
+        function createDefaultScene() {
+            if(state.scenes.length === 0) {
+                state.scenes = [{ id: 'scene-def', name: 'Estación Central', url: DEFAULT_360, mapsUrl: '', hotspots: [], lines: [], customLabels: [] }];
+                state.currentSceneId = 'scene-def'; load360Scene(state.currentSceneId);
+            }
+        }
+        function getCurrentScene() { return state.scenes.find(s => s.id === state.currentSceneId) || state.scenes[0]; }
+
+        function applyHighQualityTexture(t) {
+            t.encoding = THREE.sRGBEncoding;
+            t.generateMipmaps = false; 
+            t.minFilter = THREE.LinearFilter; 
+            t.magFilter = THREE.LinearFilter;
+            t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+        }
+
+        function load360Scene(sceneId) {
+            inSubScene = false; currentSubSceneHotspotId = null;
+            $('btnBackToScene').classList.add('hidden');
+            if(isEditingVerticesLine) endVertexEditingLine();
+            
+            state.currentSceneId = sceneId; const sc = getCurrentScene(); if(!sc) return;
+            $('mainSceneTitle').textContent = sc.name; $('loading').classList.remove('hidden');
+            const btnMaps = $('btnGoogleMaps');
+            if (sc.mapsUrl && sc.mapsUrl.trim() !== '') { btnMaps.href = sc.mapsUrl; btnMaps.classList.remove('hidden'); } else { btnMaps.classList.add('hidden'); }
+            
+            texLoader.load(sc.url || DEFAULT_360, t => {
+                applyHighQualityTexture(t);
+                sphereMat.map = t; sphereMat.needsUpdate = true;
+                
+                // --- Aplicar calibración del norte a la escena principal ---
+                if (window.sphere) {
+                    window.sphere.rotation.y = (sc.rotation || 0) * (Math.PI / 180);
+                }
+                
+                $('loading').classList.add('hidden'); rebuildSceneObjects(); renderAllUI();
+            }, undefined, () => { 
+                sphereMat.map = null; $('loading').classList.add('hidden'); rebuildSceneObjects(); renderAllUI(); 
+            });
+        }
+
+        function exitHotspot360() { 
+            inSubScene = false; currentSubSceneHotspotId = null;
+            if(state.currentSceneId) load360Scene(state.currentSceneId); 
+        }
+
+        function clear3D() {
+            meshes.lines3D.forEach(m => { scene3D.remove(m); if(m.geometry) m.geometry.dispose(); if(m.material) m.material.dispose(); });
+            meshes.labels = []; meshes.customLabels = []; meshes.lines3D = []; UI.labels.innerHTML = '';
+        }
+
+        function openHotspotModal(hs) {
+            const est = hs.estadoFunc || 'operativo';
+            if(est === 'operativo') {
+                $('hsModalEstadoFunc').textContent = 'Funcionando';
+                $('hsModalEstadoFunc').className = 'text-green-400 font-bold';
+            } else {
+                $('hsModalEstadoFunc').textContent = 'Parado';
+                $('hsModalEstadoFunc').className = 'text-red-400 font-bold';
+            }
+
+            $('hsModalTitle').textContent = hs.title || 'Medidor';
+            $('hsModalCodigo').textContent = hs.codigo || '-';
+            $('hsModalSerial').textContent = hs.serial || '-';
+            $('hsModalUsuario').textContent = hs.usuario || '-';
+            $('hsModalSector').textContent = hs.sector || '-';
+            $('hsModalTipo').textContent = hs.tipo || '-';
+            $('hsModalDiametro').textContent = hs.diametro || '-';
+            $('hsModalLectura').textContent = hs.lectura ? (hs.lectura + ' m³') : '-';
+            $('hsModalConsumo').textContent = hs.consumo ? (hs.consumo + ' m³') : '-';
+            $('hsModalFechaAct').textContent = hs.fechaAct || '-';
+            $('hsModalObs').textContent = hs.obs || 'Ninguna';
+
+            const btnGal = $('hsModalBtnGallery');
+            if (hs.galleryUrls && hs.galleryUrls.length > 0) {
+                btnGal.classList.remove('hidden');
+                btnGal.onclick = () => { $('infoHotspotModal').classList.remove('active'); openFullGallery(hs.galleryUrls); };
+            } else {
+                btnGal.classList.add('hidden');
+            }
+
+            const btn360 = $('hsModalBtn360');
+            if (hs.url360) {
+                btn360.classList.remove('hidden');
+                btn360.onclick = () => { $('infoHotspotModal').classList.remove('active'); loadSubScene(hs.url360, hs.title, hs.id); };
+            } else {
+                btn360.classList.add('hidden');
+            }
+
+            $('infoHotspotModal').classList.add('active');
+        }
+
+        function createCustomLabelElement(lbl) {
+            const el = document.createElement('div'); el.className = 'marker-container custom-label-container cursor-pointer interactive';
+            
+            if (lbl.hasArrow) {
+                el.innerHTML = `
+                    <div class="flex flex-col items-center hover:scale-105 transition-transform origin-bottom" style="pointer-events: auto;">
+                        <div style="background-color: ${lbl.bgColor}; color: ${lbl.color}; font-size: ${lbl.size}px; padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.3); font-weight: bold; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,0.6);">${escapeHTML(lbl.content)}</div>
+                        <div style="width: 0; height: 0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid ${lbl.bgColor};"></div>
+                        <div style="width: 2px; height: 25px; background: linear-gradient(to bottom, rgba(255,255,255,0.8), transparent);"></div>
+                        <div style="width: 8px; height: 8px; border-radius: 50%; background: ${lbl.color}; box-shadow: 0 0 10px ${lbl.color}; margin-top: -4px;"></div>
+                    </div>
+                `;
+            } else {
+                el.innerHTML = `<div class="custom-label" style="background-color: ${lbl.bgColor}; color: ${lbl.color}; font-size: ${lbl.size}px;">${escapeHTML(lbl.content)}</div>`;
+            }
+            
+            if (isAdmin) { 
+                el.onclick = () => { if(!isDrawingLabel && !movingLabelId && !isDrawingLine && !isDrawingHotspot) { editingLabelId = lbl.id; populateEditLabelModal(lbl); } };
+            }
+            return el;
+        }
+
+        function rebuildSceneObjects() {
+            clear3D(); const sc = getCurrentScene(); if(!sc) return;
+            
+            // Si estamos en un sub-escena, solo renderizamos las etiquetas de esa sub-escena
+            if (inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if (hs && hs.customLabels) {
+                    hs.customLabels.forEach(lbl => {
+                        const el = createCustomLabelElement(lbl);
+                        UI.labels.appendChild(el); meshes.customLabels.push({ element: el, position: new THREE.Vector3(lbl.position.x, lbl.position.y, lbl.position.z) });
+                    });
+                }
+                return; // Cortar aquí, no renderizar objetos de la escena principal
+            }
+
+            // 1. Google Maps Pin (Solo en vista principal)
+            if(sc.mapsUrl) {
+                const el = document.createElement('div'); el.className = 'marker-container pointer-events-auto cursor-pointer group';
+                el.innerHTML = `<i class="fas fa-map-marker-alt text-blue-500 map-pin"></i><div class="bg-blue-600/90 text-white text-[9px] md:text-[10px] font-bold px-2 py-1 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-blue-400">Ver Ubicación</div>`;
+                el.onclick = () => window.open(sc.mapsUrl, '_blank');
+                UI.labels.appendChild(el); meshes.labels.push({ element: el, position: new THREE.Vector3(0, -400, 200) });
+            }
+
+            // 2. Puntos / Medidores (Hotspots) (Solo en vista principal)
+            if(sc.hotspots) {
+                sc.hotspots.forEach(hs => {
+                    const el = document.createElement('div'); el.className = 'marker-container hotspot-container interactive cursor-pointer';
+                    
+                    const hsColor = hs.color || '#3b82f6';
+                    
+                    let iconContent = `<i class="fas fa-tachometer-alt text-2xl drop-shadow-lg" style="color: ${hsColor}"></i>`;
+                    if(hs.icon && hs.icon.trim() !== '') {
+                        iconContent = `<img src="${escapeHTML(hs.icon)}" class="w-full h-full object-cover rounded-full" style="image-rendering: -webkit-optimize-contrast;">`;
+                    }
+
+                    let iconHTML = `<div class="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 transition-transform backdrop-blur-sm overflow-hidden flex items-center justify-center mb-2 hotspot-icon" style="background-color: ${hsColor}33; border-color: ${hsColor}; box-shadow: 0 0 20px ${hsColor}B3;">${iconContent}</div>`;
+                    
+                    el.innerHTML = `<div class="hotspot-pulse" style="background-color: ${hsColor}80;"></div>${iconHTML}<div class="label3d bg-black/80 shadow-xl px-3 py-1 mt-1 rounded-full" style="border: 1px solid ${hsColor}80;"><span class="text-white text-[9px] md:text-[10px] font-bold whitespace-nowrap tracking-wider uppercase">${escapeHTML(hs.title)}</span></div>`;
+                    
+                    el.onclick = () => openHotspotModal(hs);
+                    UI.labels.appendChild(el); meshes.labels.push({ element: el, position: new THREE.Vector3(hs.position.x, hs.position.y, hs.position.z) });
+                });
+            }
+
+            // 3. Líneas 3D Guardadas (Solo en vista principal)
+            if(sc.lines) {
+                sc.lines.forEach(line => {
+                    if(!line.points || line.points.length < 2) return;
+                    const pts = line.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                    const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0);
+                    const rad = (line.thickness || 3) / 15;
+                    const tubeGeo = new THREE.TubeGeometry(curve, pts.length * 4, rad, 6, false);
+                    const mat = new THREE.MeshBasicMaterial({ color: line.color || '#ec4899', depthTest: true });
+                    const mesh = new THREE.Mesh(tubeGeo, mat);
+                    scene3D.add(mesh); meshes.lines3D.push(mesh);
+                });
+            }
+
+            // 4. Etiquetas de Texto Flotantes (Solo en vista principal)
+            if(sc.customLabels) {
+                sc.customLabels.forEach(lbl => {
+                    const el = createCustomLabelElement(lbl);
+                    UI.labels.appendChild(el); meshes.customLabels.push({ element: el, position: new THREE.Vector3(lbl.position.x, lbl.position.y, lbl.position.z) });
+                });
+            }
+        }
+
+        function drawLineFeedback() {
+            if (activeLineMesh) { scene3D.remove(activeLineMesh); activeLineMesh = null; }
+            if (activeLinePoints.length < 2) return;
+            const curve = new THREE.CatmullRomCurve3(activeLinePoints, false, 'catmullrom', 0);
+            const rad = currentLineThickness / 15;
+            const tubeGeo = new THREE.TubeGeometry(curve, activeLinePoints.length * 4, rad, 6, false);
+            const mat = new THREE.MeshBasicMaterial({ color: currentLineColor, depthTest: false, opacity: 0.8, transparent: true });
+            activeLineMesh = new THREE.Mesh(tubeGeo, mat);
+            scene3D.add(activeLineMesh);
+        }
+
+        renderer.domElement.addEventListener('pointerdown', e => {
+            if (!isAdmin) return;
+            if (isEditingVerticesLine) {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+                raycaster.setFromCamera(mouse, camera);
+                const intersects = raycaster.intersectObjects(vertexMarkers);
+                if (intersects.length > 0) { draggingMarker = intersects[0].object; controls.enabled = false; }
+            }
+        });
+
+        renderer.domElement.addEventListener('pointermove', e => {
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+            raycaster.setFromCamera(mouse, camera);
+
+            if (draggingMarker && isAdmin) {
+                const hit = raycaster.intersectObject(sphere)[0];
+                if (hit) { 
+                    draggingMarker.position.copy(hit.point); 
+                    if(isEditingVerticesLine) drawEditingLine();
+                }
+                return; 
+            }
+        });
+
+        renderer.domElement.addEventListener('pointerup', e => {
+            if (draggingMarker) { draggingMarker = null; controls.enabled = true; }
+        });
+
+        renderer.domElement.addEventListener('click', async e => {
+            if (!isAdmin || isEditingVerticesLine) return; 
+            
+            mouse.x = (e.clientX / window.innerWidth) * 2 - 1; mouse.y = -(e.clientY / window.innerHeight) * 2 + 1; 
+            raycaster.setFromCamera(mouse, camera); const hit = raycaster.intersectObject(sphere)[0]; if (!hit) return;
+            
+            const sc = getCurrentScene();
+            
+            if (isDrawingHotspot || movingHotspotId) {
+                if(!sc.hotspots) sc.hotspots = [];
+                if (movingHotspotId) { const hs = sc.hotspots.find(h => h.id === movingHotspotId); if(hs) hs.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; movingHotspotId = null; showToast("Medidor reubicado", "success"); } 
+                else { pendingHotspotData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; sc.hotspots.push(pendingHotspotData); showToast("Medidor creado", "success"); }
+                await saveStateToFirebase(); cancelHotspot(); rebuildSceneObjects(); renderHotspotList(); return;
+            }
+            
+            if (isDrawingLabel || movingLabelId) {
+                let targetArray;
+                if(inSubScene && currentSubSceneHotspotId) {
+                    const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                    if(!hs.customLabels) hs.customLabels = [];
+                    targetArray = hs.customLabels;
+                } else {
+                    if(!sc.customLabels) sc.customLabels = [];
+                    targetArray = sc.customLabels;
+                }
+
+                if (movingLabelId) { 
+                    const lbl = targetArray.find(l => l.id === movingLabelId); 
+                    if(lbl) lbl.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; movingLabelId = null; showToast("Etiqueta reubicada", "success"); 
+                } 
+                else { 
+                    pendingLabelData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; targetArray.push(pendingLabelData); showToast("Etiqueta creada", "success"); 
+                }
+                await saveStateToFirebase(); cancelLabelPlacement(); rebuildSceneObjects(); renderLabelList(); return;
+            }
+
+            if (isDrawingLine && !inSubScene) {
+                activeLinePoints.push(hit.point.clone());
+                drawLineFeedback();
+                return;
+            }
+        });
+
+        function cancelHotspot() { 
+            isDrawingHotspot = false; movingHotspotId = null; pendingHotspotData = null; 
+            $('hotspotMenu').classList.add('hidden'); $('hotspotForm').classList.add('hidden'); $('startHotspot').classList.remove('hidden'); 
+            renderer.domElement.style.cursor = 'grab'; 
+        }
+
+        $('startHotspot').onclick = () => { 
+            cancelLineDraw(); cancelLabelPlacement(); 
+            $('hsTitle').value = '';
+            $('hsCodigo').value = ''; $('hsSerial').value = ''; $('hsUsuario').value = ''; $('hsSector').value = '';
+            $('hsTipo').value = ''; $('hsDiametro').value = ''; $('hsLectura').value = ''; $('hsConsumo').value = '';
+            $('hsObs').value = ''; 
+            $('hsEstadoFunc').value = 'operativo';
+            $('hsFechaAct').value = '';
+            $('hsColor').value = '#3b82f6';
+            $('hsGalleryFiles').value = ''; $('hs360File').value = ''; $('hs360Url').value = '';
+            $('hsIconFile').value = ''; $('hsIconUrl').value = '';
+            
+            // Limpiar slider de calibración al crear
+            if($('hsRot360')) { $('hsRot360').value = 0; $('valHsRot360').innerText = '0°'; }
+
+            $('hotspotForm').classList.remove('hidden'); $('startHotspot').classList.add('hidden'); 
+        };
+
+        $('btnPrepareHotspot').onclick = async () => {
+            try {
+                $('loading').classList.remove('hidden');
+                
+                const title = $('hsTitle').value.trim() || 'Medidor'; 
+                const codigo = $('hsCodigo').value.trim();
+                const serial = $('hsSerial').value.trim();
+                const usuario = $('hsUsuario').value.trim();
+                const sector = $('hsSector').value.trim();
+                const tipo = $('hsTipo').value.trim();
+                const diametro = $('hsDiametro').value.trim();
+                const lectura = $('hsLectura').value.trim();
+                const consumo = $('hsConsumo').value.trim();
+                const estadoFunc = $('hsEstadoFunc').value;
+                const fechaAct = $('hsFechaAct').value;
+                const color = $('hsColor').value;
+                const obs = $('hsObs').value.trim();
+                
+                let icon = $('hsIconUrl').value.trim();
+                if($('hsIconFile').files[0]) icon = await uploadImageToImgBB($('hsIconFile').files[0]);
+
+                const galleryFiles = $('hsGalleryFiles').files;
+                let galleryUrls = [];
+                if(galleryFiles.length > 0) {
+                    galleryUrls = await Promise.all(Array.from(galleryFiles).map(f => uploadImageToImgBB(f)));
+                }
+
+                let url360 = $('hs360Url').value.trim();
+                if($('hs360File').files[0]) url360 = await uploadImageToImgBB($('hs360File').files[0]);
+
+                const rot360 = parseInt($('hsRot360').value) || 0;
+
+                pendingHotspotData = { 
+                    id: 'hs-' + Date.now(), 
+                    title, codigo, serial, usuario, sector, tipo, diametro, lectura, consumo, estadoFunc, fechaAct, color, obs, 
+                    icon, galleryUrls, url360, rot360 
+                };
+                $('hotspotForm').classList.add('hidden'); $('hotspotMenu').classList.remove('hidden'); 
+                isDrawingHotspot = true; renderer.domElement.style.cursor = 'crosshair';
+            } catch(e) {
+                showToast("Error procesando archivos", "error");
+            } finally {
+                $('loading').classList.add('hidden');
+            }
+        };
+
+        $('cancelHotspot').onclick = cancelHotspot; 
+        $('cancelHotspotPlacement').onclick = cancelHotspot;
+
+        function renderHotspotList() {
+            const c = $('hotspotList'); c.innerHTML = ''; const sc = getCurrentScene(); if (!sc.hotspots || !sc.hotspots.length) return;
+            sc.hotspots.forEach(hs => {
+                const est = hs.estadoFunc || 'operativo';
+                const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
+                const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
+                const hsColor = hs.color || '#3b82f6';
+                
+                const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
+                div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><div class="w-6 h-6 rounded-full flex items-center justify-center shrink-0" style="background-color: ${hsColor}33; border: 1px solid ${hsColor};"><i class="fas fa-tachometer-alt text-[10px]" style="color: ${hsColor};"></i></div><div class="truncate"><div class="text-[11px] font-bold text-white truncate">${escapeHTML(hs.title)}</div><div class="text-[9px] text-gray-400">Serial: ${escapeHTML(hs.serial || 'N/A')}</div><div class="text-[9px] ${estColor} mt-0.5 font-bold"><i class="fas ${est==='operativo'?'fa-check':'fa-times'} mr-1"></i>${estText}</div></div></div><div class="flex gap-1 shrink-0"><button class="edit-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-edit"></i></button><button class="move-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-arrows-alt"></i></button><button class="del-btn text-red-500 p-1 hover:bg-white/10 rounded"><i class="fas fa-trash"></i></button></div>`;
+                div.querySelector('.del-btn').onclick = () => openDeleteModal('hotspot', hs.id, hs.title);
+                div.querySelector('.edit-btn').onclick = () => { 
+                    editingHsId = hs.id; 
+                    $('editHsTitle').value = hs.title || ''; 
+                    $('editHsCodigo').value = hs.codigo || '';
+                    $('editHsSerial').value = hs.serial || '';
+                    $('editHsUsuario').value = hs.usuario || '';
+                    $('editHsSector').value = hs.sector || '';
+                    $('editHsTipo').value = hs.tipo || '';
+                    $('editHsDiametro').value = hs.diametro || '';
+                    $('editHsLectura').value = hs.lectura || '';
+                    $('editHsConsumo').value = hs.consumo || '';
+                    $('editHsEstadoFunc').value = hs.estadoFunc || 'operativo';
+                    $('editHsFechaAct').value = hs.fechaAct || '';
+                    $('editHsColor').value = hs.color || '#3b82f6';
+                    $('editHsObs').value = hs.obs || '';
+                    
+                    $('editHsIconFile').value = '';
+                    $('editHsIconUrl').value = hs.icon || '';
+                    $('editHsGalleryFiles').value = '';
+                    $('editHs360File').value = '';
+                    $('editHs360Url').value = hs.url360 || '';
+
+                    $('editHsRot360').value = hs.rot360 || 0;
+                    $('valEditHsRot360').innerText = (hs.rot360 || 0) + '°';
+                    
+                    $('editHotspotModal').classList.add('active'); 
+                };
+                div.querySelector('.move-btn').onclick = () => { cancelLineDraw(); cancelLabelPlacement(); movingHotspotId = hs.id; $('hotspotMenu').classList.remove('hidden'); $('startHotspot').classList.add('hidden'); renderer.domElement.style.cursor = 'crosshair'; };
+                c.appendChild(div);
+            });
+        }
+
+        $('saveEditHsBtn').onclick = async () => {
+            const sc = getCurrentScene(); const hs = sc.hotspots.find(h => h.id === editingHsId); if(!hs) return;
+            try {
+                $('loading').classList.remove('hidden');
+                
+                hs.title = $('editHsTitle').value.trim(); 
+                hs.codigo = $('editHsCodigo').value.trim();
+                hs.serial = $('editHsSerial').value.trim();
+                hs.usuario = $('editHsUsuario').value.trim();
+                hs.sector = $('editHsSector').value.trim();
+                hs.tipo = $('editHsTipo').value.trim();
+                hs.diametro = $('editHsDiametro').value.trim();
+                hs.lectura = $('editHsLectura').value.trim();
+                hs.consumo = $('editHsConsumo').value.trim();
+                hs.estadoFunc = $('editHsEstadoFunc').value;
+                hs.fechaAct = $('editHsFechaAct').value;
+                hs.color = $('editHsColor').value;
+                hs.obs = $('editHsObs').value.trim();
+                
+                let icon = $('editHsIconUrl').value.trim();
+                if($('editHsIconFile').files[0]) icon = await uploadImageToImgBB($('editHsIconFile').files[0]);
+                if(icon !== undefined && icon !== '') hs.icon = icon;
+                
+                const galleryFiles = $('editHsGalleryFiles').files;
+                if(galleryFiles.length > 0) {
+                    const newUrls = await Promise.all(Array.from(galleryFiles).map(f => uploadImageToImgBB(f)));
+                    if(!hs.galleryUrls) hs.galleryUrls = [];
+                    hs.galleryUrls.push(...newUrls);
+                }
+
+                let url360 = $('editHs360Url').value.trim();
+                if($('editHs360File').files[0]) url360 = await uploadImageToImgBB($('editHs360File').files[0]);
+                if(url360 !== undefined && url360 !== '') hs.url360 = url360;
+
+                hs.rot360 = parseInt($('editHsRot360').value) || 0;
+
+                await saveStateToFirebase(); $('editHotspotModal').classList.remove('active'); rebuildSceneObjects(); renderHotspotList(); 
+            } catch(e) {
+                showToast("Error guardando el medidor", "error");
+            } finally {
+                $('loading').classList.add('hidden');
+            }
+        };
+
+        function loadSubScene(url, title, hsId) {
+            inSubScene = true; 
+            currentSubSceneHotspotId = hsId;
+            $('btnBackToScene').classList.remove('hidden');
+            $('mainSceneTitle').textContent = title || "Vista Detalle 360°"; 
+            $('loading').classList.remove('hidden');
+            
+            clear3D(); 
+            
+            // Reiniciar cámara completamente para no mirar al suelo
+            controls.target.set(0, 0, -1);
+            camera.position.set(0, 0, 0.1);
+            camera.lookAt(0, 0, -1);
+            camera.fov = 70;
+            camera.updateProjectionMatrix();
+            controls.update();
+
+            texLoader.load(url, t => {
+                applyHighQualityTexture(t);
+                sphereMat.map = t; sphereMat.needsUpdate = true;
+                
+                // --- Aplicar calibración del norte ---
+                const sc = getCurrentScene();
+                const hs = sc.hotspots.find(h => h.id === hsId);
+                if (typeof sphere !== 'undefined') {
+                    sphere.rotation.y = (hs && hs.rot360 ? hs.rot360 : 0) * (Math.PI / 180);
+                }
+                
+                $('loading').classList.add('hidden'); 
+                rebuildSceneObjects();
+                renderAllUI();
+            }, undefined, () => { 
+                showToast("Error cargando el archivo 360", "error");
+                exitHotspot360();
+            });
+        }
+
+        function cancelLineDraw() { isDrawingLine = false; activeLinePoints = []; $('lineDrawUI').classList.add('hidden'); $('lineForm').classList.add('hidden'); $('startLine').classList.remove('hidden'); renderer.domElement.style.cursor = 'grab'; if (activeLineMesh) { scene3D.remove(activeLineMesh); activeLineMesh = null; } $('lineName').value = ''; }
+        
+        $('startLine').onclick = () => { cancelHotspot(); cancelLabelPlacement(); $('lineForm').classList.remove('hidden'); $('startLine').classList.add('hidden'); $('lineName').value=''; };
+        $('btnPrepareLine').onclick = () => {
+            currentLineColor = $('lineColor').value;
+            currentLineThickness = parseInt($('lineThickness').value);
+            $('lineForm').classList.add('hidden'); $('lineDrawUI').classList.remove('hidden');
+            isDrawingLine = true; activeLinePoints = []; renderer.domElement.style.cursor = 'crosshair';
+        };
+        $('cancelLine').onclick = cancelLineDraw; $('cancelLineDraw').onclick = cancelLineDraw;
+        
+        $('finishLineDraw').onclick = async () => {
+            if(activeLinePoints.length < 2) return showToast("Mínimo 2 puntos para crear una línea", "warning");
+            const name = $('lineName').value.trim() || 'Línea';
+            try {
+                $('loading').classList.remove('hidden');
+                const sc = getCurrentScene(); if(!sc.lines) sc.lines = [];
+                sc.lines.push({ id: 'line-' + Date.now(), name, color: currentLineColor, thickness: currentLineThickness, points: activeLinePoints.map(p => ({x: p.x, y: p.y, z: p.z})) });
+                await saveStateToFirebase(); cancelLineDraw(); showToast("Línea guardada", "success"); rebuildSceneObjects(); renderLineList();
+            } catch(e) { showToast("Error", "error"); } finally { $('loading').classList.add('hidden'); }
+        };
+
+        function renderLineList() {
+            const c = $('lineList'); c.innerHTML = ''; const sc = getCurrentScene(); if (!sc.lines || !sc.lines.length) return;
+            sc.lines.forEach(ln => {
+                const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
+                div.innerHTML = `<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full" style="background:${ln.color}"></div><div class="text-[11px] font-bold text-white truncate flex-1">${escapeHTML(ln.name)}</div></div><div class="flex gap-1"><button class="edit-btn text-pink-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-edit"></i></button><button class="del-btn text-red-500 p-1 hover:bg-white/10 rounded"><i class="fas fa-trash"></i></button></div>`;
+                div.querySelector('.del-btn').onclick = () => openDeleteModal('line', ln.id, ln.name);
+                div.querySelector('.edit-btn').onclick = () => { editingLineId = ln.id; $('editLnName').value = ln.name; $('editLnColor').value = ln.color || '#ec4899'; $('editLnThickness').value = ln.thickness || 3; $('valEditLnThick').innerText = (ln.thickness||3) + ' px'; $('editLineModal').classList.add('active'); };
+                c.appendChild(div);
+            });
+        }
+
+        $('saveEditLnBtn').onclick = async () => {
+            const sc = getCurrentScene(); const ln = sc.lines.find(l => l.id === editingLineId); if(!ln) return;
+            ln.name = $('editLnName').value.trim(); ln.color = $('editLnColor').value; ln.thickness = parseInt($('editLnThickness').value);
+            await saveStateToFirebase(); $('editLineModal').classList.remove('active'); rebuildSceneObjects(); renderLineList();
+        };
+
+        $('btnEditLinePts').onclick = () => { $('editLineModal').classList.remove('active'); $('sidebar').classList.remove('open'); $('btnMaximizeAdmin').classList.add('hidden'); startVertexEditingLine(editingLineId); };
+        
+        function startVertexEditingLine(lineId) {
+            isEditingVerticesLine = true; $('vertexEditUI').classList.remove('hidden');
+            lineBeingEdited = state.scenes.find(s => s.id === state.currentSceneId).lines.find(l => l.id === lineId);
+            backupPoints = JSON.parse(JSON.stringify(lineBeingEdited.points)); 
+
+            meshes.lines3D.forEach(m => { m.visible = false; }); 
+
+            const markerSize = isMobileDevice ? 24 : 18;
+            const markerGeo = new THREE.SphereGeometry(markerSize, 32, 32); 
+            const markerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, depthTest: false });
+
+            lineBeingEdited.points.forEach(p => {
+                const marker = new THREE.Mesh(markerGeo, markerMat);
+                marker.position.set(p.x, p.y, p.z);
+                scene3D.add(marker); vertexMarkers.push(marker);
+            });
+            drawEditingLine();
+        }
+
+        function drawEditingLine() {
+            if (editingPolygonMesh) scene3D.remove(editingPolygonMesh);
+            const pts = vertexMarkers.map(m => m.position.clone());
+            if(pts.length < 2) return;
+            const curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0);
+            const tubeGeo = new THREE.TubeGeometry(curve, pts.length * 4, (lineBeingEdited.thickness||3)/15, 6, false);
+            editingPolygonMesh = new THREE.Mesh(tubeGeo, new THREE.MeshBasicMaterial({ color: lineBeingEdited.color, depthTest: false, transparent: true, opacity: 0.8 }));
+            scene3D.add(editingPolygonMesh);
+        }
+
+        $('btnSaveVertices').onclick = async () => {
+            if(isEditingVerticesLine) {
+                lineBeingEdited.points = vertexMarkers.map(m => ({ x: m.position.x, y: m.position.y, z: m.position.z }));
+                endVertexEditingLine(); await saveStateToFirebase(); rebuildSceneObjects();
+                $('sidebar').classList.add('open'); showToast("Línea Actualizada", "success");
+            }
+        };
+
+        $('btnCancelVertices').onclick = () => { 
+            if(isEditingVerticesLine) { lineBeingEdited.points = backupPoints; endVertexEditingLine(); }
+            rebuildSceneObjects(); $('sidebar').classList.add('open'); 
+        };
+
+        function endVertexEditingLine() {
+            isEditingVerticesLine = false; lineBeingEdited = null; $('vertexEditUI').classList.add('hidden');
+            vertexMarkers.forEach(m => scene3D.remove(m)); vertexMarkers = [];
+            if(editingPolygonMesh) scene3D.remove(editingPolygonMesh);
+            controls.enabled = true;
+        }
+
+        function cancelLabelPlacement() { isDrawingLabel = false; movingLabelId = null; pendingLabelData = null; $('labelMenu').classList.add('hidden'); $('labelForm').classList.add('hidden'); $('startLabel').classList.remove('hidden'); renderer.domElement.style.cursor = 'grab'; }
+        
+        $('startLabel').onclick = () => { cancelHotspot(); cancelLineDraw(); $('labelForm').classList.remove('hidden'); $('startLabel').classList.add('hidden'); $('lblContent').value = ''; };
+        
+        $('btnPrepareLabel').onclick = () => {
+            const content = $('lblContent').value.trim() || 'Texto'; 
+            const color = $('lblColor').value; 
+            const bgColor = $('lblBg').value; 
+            const size = parseInt($('lblSize').value);
+            const hasArrow = $('lblStyle').value === 'arrow';
+            pendingLabelData = { id: 'lbl-' + Date.now(), content, color, bgColor, size, hasArrow };
+            $('labelForm').classList.add('hidden'); $('labelMenu').classList.remove('hidden'); isDrawingLabel = true; renderer.domElement.style.cursor = 'crosshair';
+        };
+        $('cancelLabel').onclick = cancelLabelPlacement; $('cancelLabelPlacement').onclick = cancelLabelPlacement;
+
+        function renderLabelList() {
+            const c = $('labelList'); c.innerHTML = ''; const sc = getCurrentScene(); 
+            
+            let targetArray = [];
+            if(inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if(hs && hs.customLabels) targetArray = hs.customLabels;
+            } else {
+                if(sc.customLabels) targetArray = sc.customLabels;
+            }
+
+            if (!targetArray.length) return;
+
+            targetArray.forEach(lbl => {
+                const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
+                div.innerHTML = `<div class="text-[11px] font-bold truncate flex-1" style="color: ${lbl.color}; background: ${lbl.bgColor}; padding: 2px 6px; border-radius: 4px;">${escapeHTML(lbl.content)}</div><div class="flex gap-1 ml-2"><button class="edit-btn text-cyan-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-edit"></i></button><button class="move-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-arrows-alt"></i></button><button class="del-btn text-red-500 p-1 hover:bg-white/10 rounded"><i class="fas fa-trash"></i></button></div>`;
+                div.querySelector('.del-btn').onclick = () => openDeleteModal(inSubScene ? 'sublabel' : 'label', lbl.id, lbl.content);
+                div.querySelector('.edit-btn').onclick = () => { populateEditLabelModal(lbl); };
+                div.querySelector('.move-btn').onclick = () => { cancelHotspot(); cancelLineDraw(); cancelLabelPlacement(); movingLabelId = lbl.id; $('labelMenu').classList.remove('hidden'); $('startLabel').classList.add('hidden'); renderer.domElement.style.cursor = 'crosshair'; };
+                c.appendChild(div);
+            });
+        }
+
+        function populateEditLabelModal(lbl) {
+            editingLabelId = lbl.id; 
+            $('editLblContent').value = lbl.content; 
+            $('editLblColor').value = lbl.color; 
+            $('editLblBg').value = lbl.bgColor; 
+            $('editLblSize').value = lbl.size || 12; 
+            $('valEditLblSize').innerText = (lbl.size||12) + ' px'; 
+            $('editLblStyle').value = lbl.hasArrow ? 'arrow' : 'simple';
+            $('editLabelModal').classList.add('active');
+        }
+
+        $('saveEditLblBtn').onclick = async () => {
+            const sc = getCurrentScene(); 
+            let targetArray = [];
+            if(inSubScene && currentSubSceneHotspotId) {
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if(hs) targetArray = hs.customLabels || [];
+            } else {
+                targetArray = sc.customLabels || [];
+            }
+
+            const lbl = targetArray.find(l => l.id === editingLabelId); if(!lbl) return;
+            lbl.content = $('editLblContent').value.trim() || 'Texto'; 
+            lbl.color = $('editLblColor').value; 
+            lbl.bgColor = $('editLblBg').value; 
+            lbl.size = parseInt($('editLblSize').value);
+            lbl.hasArrow = $('editLblStyle').value === 'arrow';
+
+            await saveStateToFirebase(); $('editLabelModal').classList.remove('active'); rebuildSceneObjects(); renderLabelList();
+        };
+
+        function openFullGallery(urls) { if(!urls || urls.length === 0) return; currentGallery = urls; currentGalleryIndex = 0; updateGalleryImage(); $('fullGalleryModal').classList.add('active'); }
+        function updateGalleryImage() { $('fullGalleryImg').src = currentGallery[currentGalleryIndex]; $('galleryCounter').textContent = `${currentGalleryIndex + 1} / ${currentGallery.length}`; $('btnPrevImg').style.display = currentGallery.length > 1 ? 'flex' : 'none'; $('btnNextImg').style.display = currentGallery.length > 1 ? 'flex' : 'none'; }
+        $('btnPrevImg').onclick = (e) => { e.stopPropagation(); currentGalleryIndex = (currentGalleryIndex - 1 + currentGallery.length) % currentGallery.length; updateGalleryImage(); };
+        $('btnNextImg').onclick = (e) => { e.stopPropagation(); currentGalleryIndex = (currentGalleryIndex + 1) % currentGallery.length; updateGalleryImage(); };
+
+        function updateContactUI() {
+            $('cfgContactName').value = state.contact.name || ''; $('cfgContactPhone').value = state.contact.phone || '';
+            let n = state.contact.phone || '573206658864'; n = n.replace(/\D/g,'');
+            $('whatsappLink').href = 'https://wa.me/' + n; $('whatsappName').textContent = state.contact.name || 'Contactar';
+        }
+        $('saveContactConfig').onclick = async () => { state.contact.name = $('cfgContactName').value.trim(); state.contact.phone = $('cfgContactPhone').value.trim(); await saveStateToFirebase(); updateContactUI(); showToast("Contacto actualizado", "success"); };
+
+        // --- EDICIÓN DE GALERÍA (SOLO MODO ADMINISTRADOR) ---
+        async function adminDeleteGalleryImage(hsId, idx, ev) {
+            if (ev) ev.stopPropagation();
+            if (!isAdmin) return;
+            const sc = getCurrentScene(); const hs = sc && sc.hotspots.find(h => h.id === hsId);
+            if (!hs || !hs.galleryUrls || !hs.galleryUrls[idx]) return;
+            if (!confirm('¿Eliminar esta imagen de la galería?')) return;
+            hs.galleryUrls.splice(idx, 1);
+            await saveStateToFirebase();
+            renderPublicMedidoresList();
+            showToast('Imagen eliminada', 'success');
+        }
+
+        function adminPickGalleryImages(hsId, ev) {
+            if (ev) ev.stopPropagation();
+            if (!isAdmin) return;
+            const input = document.createElement('input');
+            input.type = 'file'; input.multiple = true; input.accept = 'image/jpeg, image/png';
+            input.onchange = async () => {
+                const files = Array.from(input.files || []);
+                if (files.length === 0) return;
+                const sc = getCurrentScene(); const hs = sc && sc.hotspots.find(h => h.id === hsId);
+                if (!hs) return;
+                try {
+                    $('loading').classList.remove('hidden');
+                    const newUrls = await Promise.all(files.map(f => uploadImageToImgBB(f)));
+                    if (!hs.galleryUrls) hs.galleryUrls = [];
+                    hs.galleryUrls.push(...newUrls);
+                    await saveStateToFirebase();
+                    renderPublicMedidoresList();
+                    showToast(newUrls.length === 1 ? 'Imagen añadida' : newUrls.length + ' imágenes añadidas', 'success');
+                } catch (e) {
+                    console.error(e);
+                    showToast('Error subiendo imágenes', 'error');
+                } finally {
+                    $('loading').classList.add('hidden');
+                }
+            };
+            input.click();
+        }
+
+        // --- RENDERIZADO DE MEDIDORES EN BARRA PÚBLICA ---
+        function renderPublicMedidoresList() {
+            const c = $('publicMedidoresList'); c.innerHTML = ''; 
+            const sc = getCurrentScene();
+            
+            if (!sc || !sc.hotspots || sc.hotspots.length === 0) {
+                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6"><i class="fas fa-info-circle mb-2 text-xl block"></i>No hay medidores registrados en esta escena.</div>';
+                return;
+            }
+
+            const query = $('filterSearch').value.toLowerCase();
+            const filtered = sc.hotspots.filter(hs => {
+                const titleMatch = (hs.title || '').toLowerCase().includes(query);
+                const serialMatch = (hs.serial || '').toLowerCase().includes(query);
+                const sectorMatch = (hs.sector || '').toLowerCase().includes(query);
+                const codigoMatch = (hs.codigo || '').toLowerCase().includes(query);
+                const usuarioMatch = (hs.usuario || '').toString().toLowerCase().includes(query);
+                const lecturaMatch = (hs.lectura || '').toLowerCase().includes(query);
+                const consumoMatch = (hs.consumo || '').toLowerCase().includes(query);
+                
+                return titleMatch || serialMatch || sectorMatch || codigoMatch || usuarioMatch || lecturaMatch || consumoMatch;
+            });
+
+            if (filtered.length === 0) {
+                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6">Ningún medidor coincide con tu búsqueda.</div>';
+                return;
+            }
+
+            filtered.forEach(hs => {
+                const est = hs.estadoFunc || 'operativo';
+                const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
+                const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
+                const estIcon = est === 'operativo' ? 'fa-check-circle' : 'fa-exclamation-circle';
+                const hsColor = hs.color || '#3b82f6';
+
+                let galleryHTML = '';
+                const galUrls = hs.galleryUrls || [];
+                if (galUrls.length > 0 || isAdmin) {
+                    galleryHTML = `<div class="flex gap-2 overflow-x-auto scroll snap-x mt-3 pb-2 border-t border-white/5 pt-2">`;
+                    galUrls.forEach((url, idx) => {
+                        galleryHTML += `<div class="relative shrink-0 snap-start">
+                            <img src="${url}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-white/10 cursor-pointer shadow-md transition-colors" style="border-color: ${hsColor}40;" onmouseover="this.style.borderColor='${hsColor}'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'" onclick="openFullGallery(${JSON.stringify(galUrls).replace(/"/g, '&quot;')}); event.stopPropagation();">
+                            ${isAdmin ? `<button type="button" title="Eliminar imagen" onclick="adminDeleteGalleryImage('${hs.id}', ${idx}, event)" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-lg border border-red-300 z-10"><i class="fas fa-times"></i></button>` : ''}
+                        </div>`;
+                    });
+                    if (isAdmin) {
+                        galleryHTML += `<button type="button" title="Insertar imágenes" onclick="adminPickGalleryImages('${hs.id}', event)" class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg border-2 border-dashed border-indigo-400/60 hover:border-indigo-300 hover:bg-indigo-500/10 text-indigo-300 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors"><i class="fas fa-plus text-sm"></i>Añadir</button>`;
+                    }
+                    galleryHTML += `</div>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = 'glass bg-black/50 border border-white/10 rounded-xl p-3 md:p-4 transition-colors cursor-pointer shadow-lg group';
+                card.onmouseover = () => { card.style.borderColor = hsColor + '80'; };
+                card.onmouseout = () => { card.style.borderColor = 'rgba(255,255,255,0.1)'; };
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 md:w-4 md:h-4 rounded-full" style="background-color: ${hsColor}; box-shadow: 0 0 10px ${hsColor}cc;"></span>
+                            <h3 class="font-bold text-white text-sm md:text-base transition-colors" style="text-shadow: 0 0 5px ${hsColor}40;">${escapeHTML(hs.title)}</h3>
+                        </div>
+                        ${hs.serial ? `<span class="bg-gray-800/80 font-bold px-2 py-1 rounded text-[10px] md:text-[11px] whitespace-nowrap" style="color: ${hsColor}; border: 1px solid ${hsColor}50;">Serial: ${escapeHTML(hs.serial)}</span>` : ''}
+                    </div>
+                    <div class="mb-3">
+                        <span class="bg-gray-800/50 ${estColor} px-2 py-1 rounded text-[10px] md:text-[11px] whitespace-nowrap border border-white/5"><i class="fas ${estIcon} mr-1"></i>${estText}</span>
+                    </div>
+                    <div class="flex flex-col gap-1 text-[10px] md:text-[11px] text-gray-300 mb-2 mt-2 leading-tight">
+                        ${hs.codigo ? `<div><span class="text-gray-400 font-bold">Código Hoja de Vida:</span> ${escapeHTML(hs.codigo)}</div>` : ''}
+                        ${hs.sector ? `<div><span class="text-gray-400 font-bold">Sector:</span> ${escapeHTML(hs.sector)}</div>` : ''}
+                        ${hs.usuario ? `<div><span class="text-gray-400 font-bold">Usuario:</span> ${escapeHTML(hs.usuario)}</div>` : ''}
+                        ${hs.lectura ? `<div><span class="text-gray-400 font-bold">Lectura Actual (m³):</span> <strong class="text-blue-400">${escapeHTML(hs.lectura)}</strong></div>` : ''}
+                        ${hs.consumo ? `<div><span class="text-gray-400 font-bold">Consumo Acumulado (m³):</span> <strong class="text-cyan-400">${escapeHTML(hs.consumo)}</strong></div>` : ''}
+                        ${hs.fechaAct ? `<div><span class="text-gray-400 font-bold">Última Actualización:</span> ${escapeHTML(hs.fechaAct)}</div>` : ''}
+                    </div>
+                    ${galleryHTML}
+                `;
+                card.onclick = () => { openHotspotModal(hs); };
+                c.appendChild(card);
+            });
+        }
+
+        function renderAllUI() { 
+            // Controlar visualización de advertencia SubEscena
+            if (inSubScene) {
+                $('subsceneAdminWarning').classList.remove('hidden');
+                $('sectionEscenas').classList.add('hidden');
+                $('hrEscenas').classList.add('hidden');
+                $('sectionMedidores').classList.add('hidden');
+                $('hrMedidores').classList.add('hidden');
+                $('sectionLineas').classList.add('hidden');
+                $('hrLineas').classList.add('hidden');
+            } else {
+                $('subsceneAdminWarning').classList.add('hidden');
+                $('sectionEscenas').classList.remove('hidden');
+                $('hrEscenas').classList.remove('hidden');
+                $('sectionMedidores').classList.remove('hidden');
+                $('hrMedidores').classList.remove('hidden');
+                $('sectionLineas').classList.remove('hidden');
+                $('hrLineas').classList.remove('hidden');
+            }
+
+            renderSceneListAdmin(); 
+            renderPublicMedidoresList();
+            renderHotspotList(); 
+            renderLineList(); 
+            renderLabelList(); 
+            renderPublicCarousel(); 
+        }
+
+        function renderSceneListAdmin() {
+            const c = $('sceneListAdmin'); c.innerHTML = '';
+            state.scenes.forEach(sc => {
+                const isActive = sc.id === state.currentSceneId; const div = document.createElement('div');
+                div.className = `flex items-center justify-between p-2 rounded-xl border ${isActive ? 'bg-blue-600/30 border-blue-500/50' : 'bg-white/5 border-white/10 hover:bg-white/10'} transition-colors cursor-pointer`;
+                div.innerHTML = `<div class="flex-1 overflow-hidden" onclick="load360Scene('${sc.id}')"><div class="text-xs font-bold text-white truncate">${escapeHTML(sc.name)}</div></div><div class="flex gap-1"><button class="edit-btn text-blue-400 hover:text-white p-2"><i class="fas fa-edit"></i></button>${state.scenes.length > 1 ? `<button class="del-btn text-red-400 hover:text-white p-2"><i class="fas fa-trash"></i></button>` : ''}</div>`;
+                div.querySelector('.edit-btn').onclick = (e) => { 
+                    e.stopPropagation(); 
+                    $('editScName').value = sc.name; 
+                    $('editScMaps').value = sc.mapsUrl || ''; 
+                    $('editScFile').value = ''; 
+                    $('editScRot').value = sc.rotation || 0;
+                    $('valEditScRot').innerText = (sc.rotation || 0) + '°';
+                    state._editingSceneId = sc.id; 
+                    $('editSceneModal').classList.add('active'); 
+                };
+                if(state.scenes.length > 1) div.querySelector('.del-btn').onclick = (e) => { e.stopPropagation(); openDeleteModal('scene', sc.id, sc.name); };
+                c.appendChild(div);
+            });
+        }
+
+        $('saveEditScBtn').onclick = async () => {
+            const sc = state.scenes.find(s => s.id === state._editingSceneId); if(!sc) return;
+            sc.name = $('editScName').value.trim(); 
+            sc.mapsUrl = $('editScMaps').value.trim(); 
+            sc.rotation = parseInt($('editScRot').value) || 0;
+            const file =$('editScFile').files[0];
+            try { 
+                $('loading').classList.remove('hidden'); 
+                if(file) { sc.url = await uploadImageToImgBB(file); }
+                await saveStateToFirebase(); $('editSceneModal').classList.remove('active'); load360Scene(state.currentSceneId); showToast("Escena actualizada", "success"); 
+            } catch(e) { showToast("Error", "error"); } finally { $('loading').classList.add('hidden'); }
+        };
+
+        function renderPublicCarousel() {
+            const c = $('publicSceneCarousel'); c.innerHTML = '';
+            for (const sc of state.scenes) {
+                const isActive = sc.id === state.currentSceneId; const div = document.createElement('div');
+                div.className = `scene-card flex-shrink-0 w-28 h-16 md:w-32 md:h-20 rounded-xl cursor-pointer border-2 transition-all ${isActive ? 'border-blue-500 scale-105 shadow-[0_0_15px_rgba(59,130,246,0.5)]' : 'border-transparent hover:border-white/30 opacity-60 hover:opacity-100'} flex items-end justify-center pb-1`;
+                div.innerHTML = `<span class="relative z-10 text-[9px] md:text-[10px] font-bold text-center leading-tight px-1 drop-shadow-md text-white" style="text-shadow: 0 2px 4px rgba(0,0,0,0.9);">${escapeHTML(sc.name)}</span>`;
+                div.onclick = () => load360Scene(sc.id); if (sc.url) div.style.backgroundImage = `url('${sc.url}')`; c.appendChild(div);
+            }
+        }
+
+        function navigateScenes(dir) { const idx = state.scenes.findIndex(s => s.id === state.currentSceneId); let nextIdx = idx + dir; if (nextIdx < 0) nextIdx = state.scenes.length - 1; if (nextIdx >= state.scenes.length) nextIdx = 0; load360Scene(state.scenes[nextIdx].id); }
+        $('btnPrevScene').onclick = () => navigateScenes(-1);$('btnNextScene').onclick = () => navigateScenes(1);
+
+        $('btnNewSceneForm').onclick = () => {$('sceneForm').classList.toggle('hidden'); $('sceneName').value = '';$('sceneFile').value = ''; $('sceneMapsUrl').value = ''; };$('cancelScene').onclick = () => $('sceneForm').classList.add('hidden');$('saveScene').onclick = async () => {
+            const name = $('sceneName').value.trim() || 'Nueva Estación'; const mapsUrl = $('sceneMapsUrl').value.trim(); const file =$('sceneFile').files[0];
+            if (!file) return showToast("Foto 360° obligatoria", "warning");
+            try { 
+                $('loading').classList.remove('hidden'); 
+                const url = await uploadImageToImgBB(file); 
+                const newScene = { id: 'scene-' + Date.now(), name, url, mapsUrl, hotspots: [], lines: [], customLabels: [], lots: [] }; 
+                state.scenes.push(newScene); await saveStateToFirebase(); $('sceneForm').classList.add('hidden'); showToast("Escena creada", "success"); load360Scene(newScene.id); 
+            } catch (e) { showToast(e.message, "error"); } finally { $('loading').classList.add('hidden'); }
+        };
+
+        function openDeleteModal(type, id, name) { deleteType = type; deleteId = id; $('deleteModal').classList.add('active'); }$('cancelDeleteBtn').onclick = () => $('deleteModal').classList.remove('active');$('confirmDeleteBtn').onclick = () => { 
+            const sc = getCurrentScene(); 
+            if (deleteType === 'scene') { state.scenes = state.scenes.filter(s => s.id !== deleteId); if(state.currentSceneId === deleteId) state.currentSceneId = state.scenes[0].id; } 
+            else if (deleteType === 'hotspot') { sc.hotspots = sc.hotspots.filter(h => h.id !== deleteId); } 
+            else if (deleteType === 'line') { sc.lines = sc.lines.filter(t => t.id !== deleteId); } 
+            else if (deleteType === 'label') { sc.customLabels = sc.customLabels.filter(t => t.id !== deleteId); } 
+            else if (deleteType === 'sublabel') { 
+                const hs = sc.hotspots.find(h => h.id === currentSubSceneHotspotId);
+                if (hs && hs.customLabels) hs.customLabels = hs.customLabels.filter(t => t.id !== deleteId);
+            }
+            saveStateToFirebase(); 
+            rebuildSceneObjects(); 
+            renderAllUI();
+            $('deleteModal').classList.remove('active'); 
+        };
+
+        $('btnOpenPublicSidebar').onclick = () => { 
+            if(isAdmin) { $('sidebar').classList.remove('open'); }
+            $('publicSidebar').classList.add('open');$('btnOpenPublicSidebar').classList.add('hidden');
+        };
+        
+        $('closePublicSidebar').onclick = () => { 
+            $('publicSidebar').classList.remove('open');$('btnOpenPublicSidebar').classList.remove('hidden');
+        };
+
+        function logout() { 
+            isAdmin = false; $('modeIcon').className = "fas fa-eye text-blue-400"; $('modeText').textContent = 'Modo Público'; 
+            $('adminKnob').style.transform = 'translateX(0)';$('toggleAdminBtn').classList.remove('border-blue-500'); 
+            $('sidebar').classList.remove('open');$('btnMaximizeAdmin').classList.add('hidden'); 
+            cancelHotspot(); cancelLineDraw(); cancelLabelPlacement(); renderPublicMedidoresList(); 
+            showToast("Modo Público", "info"); 
+        }
+        
+        $('toggleAdminBtn').onclick = () => { 
+            if (!isAdmin) { 
+                $('loginModal').classList.add('active'); $('password').value = ''; setTimeout(() =>$('password').focus(), 100); 
+            } else { 
+                $('publicSidebar').classList.remove('open');$('btnOpenPublicSidebar').classList.remove('hidden');
+                $('sidebar').classList.add('open');$('btnMaximizeAdmin').classList.add('hidden'); 
+            } 
+        };
+        
+        $('closeAdmin').onclick = () => { 
+            $('sidebar').classList.remove('open');$('btnMaximizeAdmin').classList.remove('hidden'); 
+        };
+        
+        $('btnMaximizeAdmin').onclick = () => { 
+            $('publicSidebar').classList.remove('open');$('btnOpenPublicSidebar').classList.remove('hidden');
+            $('sidebar').classList.add('open');$('btnMaximizeAdmin').classList.add('hidden'); 
+        };
+        $('logout').onclick = logout; $('cancelLogin').onclick = () => $('loginModal').classList.remove('active');$('loginBtn').onclick = () => {
+            if ($('password').value !== state.adminPassword) return showToast("Clave incorrecta", "error");
+            $('loginModal').classList.remove('active'); isAdmin = true; $('modeIcon').className = "fas fa-tools text-blue-400"; 
+            $('modeText').textContent = 'Modo Edición'; $('adminKnob').style.transform = 'translateX(20px)';$('toggleAdminBtn').classList.add('border-blue-500'); 
+            $('publicSidebar').classList.remove('open');$('btnOpenPublicSidebar').classList.remove('hidden');
+            $('sidebar').classList.add('open');$('btnMaximizeAdmin').classList.add('hidden'); 
+            renderPublicMedidoresList();
+            showToast("Modo Edición Activado", "success");
+        };
+
+        $('btnOpenChangePwd').onclick = () => {$('newPwd').value = ''; $('securityCode').value = '';$('changePwdModal').classList.add('active');
+        };
+
+        $('saveNewPwdBtn').onclick = async () => {
+            const secCode = $('securityCode').value.trim(); const newPwd =$('newPwd').value.trim();
+            if(secCode !== "373737") return showToast("Código de seguridad incorrecto", "error");
+            if(!newPwd || newPwd.length < 4) return showToast("La clave debe tener al menos 4 caracteres", "warning");
+            
+            state.adminPassword = newPwd;
+            try {
+                await saveStateToFirebase(); $('changePwdModal').classList.remove('active'); showToast("Contraseña actualizada exitosamente", "success");
+            } catch(e) { showToast("Error al guardar contraseña", "error"); }
+        };
+
+        $('password').addEventListener('keydown', e => { if (e.key === 'Enter')$('loginBtn').click(); });
+
+        addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+        
+        function animate() {
+            requestAnimationFrame(animate); controls.update();
+            
+            const allLabels = [...meshes.labels, ...meshes.customLabels];
+            allLabels.forEach(x => {
+                const v = x.position.clone().project(camera);
+                if (v.z > 1) { x.element.style.display = 'none'; return; }
+                x.element.style.display = 'flex'; x.element.style.left = (v.x * 0.5 + 0.5) * innerWidth + 'px'; x.element.style.top = (v.y * -0.5 + 0.5) * innerHeight + 'px';
+            });
+
+            if($('compassNeedle')) { const az = controls.getAzimuthalAngle(); const deg = THREE.MathUtils.radToDeg(az);$('compassNeedle').style.transform = `rotate(${deg - 45}deg)`; }
+            renderer.render(scene3D, camera);
+        }
+
+        window.onload = () => { initData(); animate(); };
+    </script>
+</body>
+</html>
