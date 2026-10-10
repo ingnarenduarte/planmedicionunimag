@@ -10,7 +10,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     
-    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
 
@@ -32,18 +31,15 @@
         .marker-container { position: absolute; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; pointer-events: none; z-index: 10; }
         .map-pin { font-size: 36px; text-shadow: 0 4px 10px rgba(0,0,0,0.6); margin-bottom: 2px; animation: float-pin 2s ease-in-out infinite; }
         
-        /* Animaciones Puntos Interactivos */
         .hotspot-icon { font-size: 32px; text-shadow: 0 4px 15px rgba(0,0,0,0.8); transition: transform 0.2s; }
         .hotspot-container:hover .hotspot-icon { transform: scale(1.15) translateY(-5px); }
         .hotspot-pulse { position: absolute; width: 30px; height: 30px; border-radius: 50%; z-index: -1; animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping-slow { 75%, 100% { transform: scale(2); opacity: 0; } }
         @keyframes float-pin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
-        /* Etiquetas Ocultas por Defecto */
         .label3d { display: flex; flex-direction: column; align-items: center; background: transparent; border-radius: 12px; pointer-events: auto; transition: transform 0.2s; }
         .label3d:hover { transform: scale(1.05); }
 
-        /* Etiqueta de Texto Manual (Custom Label) */
         .custom-label { background: rgba(15,23,42,0.9); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 8px 20px rgba(0,0,0,0.5); pointer-events: auto; font-weight: bold; white-space: nowrap; transition: transform 0.2s; }
         .custom-label:hover { transform: scale(1.05); }
         
@@ -63,31 +59,17 @@
         
         .snap-x { scroll-snap-type: x mandatory; }
         .snap-start { scroll-snap-align: start; }
-
-        /* Miniaturas galería admin */
-        .gallery-thumb-wrap { position: relative; display: inline-block; }
-        .gallery-thumb-wrap .thumb-del {
-            position: absolute; top: -6px; right: -6px;
-            background: #dc2626; color: #fff; border-radius: 50%;
-            width: 20px; height: 20px; font-size: 10px; display: flex;
-            align-items: center; justify-content: center; cursor: pointer;
-            border: 2px solid #000; box-shadow: 0 2px 6px rgba(0,0,0,0.6);
-            transition: transform .15s;
-        }
-        .gallery-thumb-wrap .thumb-del:hover { transform: scale(1.15); background: #ef4444; }
     </style>
 </head>
 <body>
     <div id="canvas"></div>
     <div id="labels" class="fixed inset-0 z-10 pointer-events-none overflow-hidden"></div>
     
-    <!-- Brújula Dinámica -->
     <div id="compass" class="fixed top-24 right-4 md:right-6 w-12 h-12 md:w-14 md:h-14 glass rounded-full flex flex-col items-center justify-center z-20 shadow-2xl pointer-events-none border border-blue-500/40 bg-black/60">
         <span class="text-[9px] md:text-[10px] font-bold text-blue-500 mb-0.5 leading-none">N</span>
         <i id="compassNeedle" class="fas fa-location-arrow text-white text-lg md:text-xl transform -rotate-45 transition-transform duration-75 origin-center"></i>
     </div>
 
-    <!-- Controles Flotantes para Edición de Vértices de Líneas -->
     <div id="vertexEditUI" class="hidden fixed top-4 left-1/2 -translate-x-1/2 z-50 interactive glass px-4 py-3 rounded-2xl flex flex-col md:flex-row gap-3 items-center border-blue-500/50 shadow-[0_10px_30px_rgba(0,0,0,0.8)] w-[95%] md:w-auto">
         <div class="flex flex-col text-center md:text-left">
             <span class="text-[11px] text-blue-400 font-bold uppercase tracking-widest" id="vertexEditTitle"><i class="fas fa-hand-pointer mr-1"></i> Editando Vértices de Línea</span>
@@ -105,19 +87,17 @@
         </button>
     </div>
     
-    <!-- Botón Toggle Barra Admin -->
     <button id="btnMaximizeAdmin" class="hidden fixed top-1/2 left-0 -translate-y-1/2 z-40 glass bg-blue-600 hover:bg-blue-500 text-white p-3 md:p-4 rounded-r-2xl shadow-[5px_0_20px_rgba(59,130,246,0.4)] border-y border-r border-blue-400 interactive transition-all group">
         <i class="fas fa-tools mb-1 block text-xs"></i>
         <i class="fas fa-chevron-right group-hover:translate-x-1 transition-transform"></i>
     </button>
 
-    <!-- Botón Toggle Barra Pública -->
     <button id="btnOpenPublicSidebar" class="fixed top-1/3 left-0 -translate-y-1/2 z-20 glass bg-blue-600/80 hover:bg-blue-500 text-white p-3 md:p-4 rounded-r-2xl shadow-[5px_0_20px_rgba(59,130,246,0.4)] border-y border-r border-blue-400 interactive transition-all group cursor-pointer backdrop-blur-md flex flex-col items-center">
         <i class="fas fa-list-ul mb-1 block text-sm"></i>
         <span class="text-[9px] font-bold uppercase tracking-wider writing-vertical opacity-0 group-hover:opacity-100 transition-opacity absolute left-12 whitespace-nowrap bg-blue-900/90 px-2 py-1 rounded border border-blue-400">Medidores</span>
     </button>
 
-    <!-- Carrusel Galería (Pantalla Completa) -->
+    <!-- CARRUSEL GALERÍA (con botones admin) -->
     <div id="fullGalleryModal" class="modal-overlay interactive" onclick="if(event.target === this) this.classList.remove('active')">
         <div class="relative w-full h-full flex items-center justify-center p-2 md:p-4">
             <img id="fullGalleryImg" src="" class="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl border-2 border-blue-500/50" style="image-rendering: -webkit-optimize-contrast;">
@@ -125,11 +105,10 @@
             <button id="btnPrevImg" class="absolute top-1/2 left-2 md:left-4 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 glass bg-black/60 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-xl"><i class="fas fa-chevron-left text-xl md:text-2xl text-white"></i></button>
             <button id="btnNextImg" class="absolute top-1/2 right-2 md:right-4 -translate-y-1/2 w-10 h-10 md:w-14 md:h-14 glass bg-black/60 rounded-full flex items-center justify-center hover:bg-blue-500 transition-colors shadow-xl"><i class="fas fa-chevron-right text-xl md:text-2xl text-white"></i></button>
             
-            <!-- NUEVOS BOTONES DE EDICIÓN (solo admin) -->
-            <button id="btnDeleteGalleryImg" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-red-400 transition-colors">
+            <button id="btnDeleteGalleryImg" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-red-400 transition-colors z-10">
                 <i class="fas fa-trash-alt mr-1"></i> Eliminar esta imagen
             </button>
-            <button id="btnAddGalleryImg" class="hidden absolute bottom-4 right-4 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-green-400 transition-colors">
+            <button id="btnAddGalleryImg" class="hidden absolute bottom-4 right-4 bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-full text-xs font-bold shadow-xl border border-green-400 transition-colors z-10">
                 <i class="fas fa-plus mr-1"></i> Añadir imagen
             </button>
             <input type="file" id="galleryAdminInput" accept="image/jpeg, image/png, image/webp" multiple class="hidden">
@@ -138,7 +117,7 @@
         </div>
     </div>
 
-    <!-- Info Hotspot Modal (Ficha del Medidor) -->
+    <!-- INFO HOTSPOT MODAL -->
     <div id="infoHotspotModal" class="modal-overlay interactive" onclick="if(event.target === this) this.classList.remove('active')">
         <div class="glass rounded-2xl p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90 text-center">
             <div id="hsModalIconContainer" class="w-16 h-16 mx-auto rounded-full bg-blue-900/50 border border-blue-500/50 flex items-center justify-center shadow-[0_0_15px_rgba(59,130,246,0.3)] mb-4 overflow-hidden">
@@ -163,16 +142,6 @@
                     <span class="text-gray-400 font-bold block mb-1">Observaciones:</span>
                     <span id="hsModalObs" class="text-white italic block"></span>
                 </div>
-
-                <!-- NUEVO: Galería incrustada en la ficha con botones admin -->
-                <div id="hsModalGalleryBlock" class="hidden border-t border-white/10 pt-3 mt-2">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-gray-400 font-bold text-[11px]"><i class="fas fa-images mr-1 text-indigo-400"></i>Galería</span>
-                        <button id="hsModalAddImgBtn" class="hidden bg-green-600 hover:bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md shadow"><i class="fas fa-plus mr-1"></i>Añadir</button>
-                    </div>
-                    <div id="hsModalGalleryThumbs" class="flex gap-2 overflow-x-auto scroll pb-1"></div>
-                    <input type="file" id="hsModalGalleryInput" accept="image/jpeg, image/png, image/webp" multiple class="hidden">
-                </div>
             </div>
 
             <div class="flex gap-2">
@@ -185,7 +154,6 @@
 
     <div id="ui" class="flex">
         
-        <!-- BARRA LATERAL PÚBLICA (Listado de Medidores) -->
         <aside id="publicSidebar" class="sidebar glass z-50 border-r border-blue-500/30 shadow-[10px_0_30px_rgba(0,0,0,0.5)] bg-slate-900/95">
             <div class="p-4 md:p-5 border-b border-blue-500/30 flex items-center justify-between bg-black/40 backdrop-blur-md">
                 <div>
@@ -205,12 +173,9 @@
                 </div>
             </div>
 
-            <div class="scroll flex-1 p-3 md:p-4 space-y-3" id="publicMedidoresList">
-                <!-- Tarjetas dinámicas de medidores -->
-            </div>
+            <div class="scroll flex-1 p-3 md:p-4 space-y-3" id="publicMedidoresList"></div>
         </aside>
 
-        <!-- BARRA LATERAL ADMIN -->
         <aside id="sidebar" class="sidebar glass z-50 border-r border-blue-500/20 bg-slate-900/95">
             <div class="p-4 md:p-5 border-b border-blue-500/20 flex items-center justify-between bg-black/60">
                 <div>
@@ -221,12 +186,10 @@
             </div>
             
             <div class="scroll flex-1 p-4 md:p-5 space-y-5 md:space-y-6">
-                <!-- Aviso si estamos dentro de un Hotspot 360 -->
                 <div id="subsceneAdminWarning" class="hidden bg-blue-600/20 text-blue-300 p-3 text-[10px] md:text-xs text-center rounded-lg border border-blue-500/30">
                     <i class="fas fa-info-circle mr-1"></i> Estás dentro de la vista 360° de un Medidor. Las Etiquetas que añadas se guardarán en el interior de este medidor.
                 </div>
 
-                <!-- 0. Contacto -->
                 <section>
                     <h3 class="text-xs uppercase tracking-wider text-green-400 font-bold mb-2 md:mb-3"><i class="fab fa-whatsapp mr-2"></i>Contacto Soporte / Técnico</h3>
                     <div class="bg-black/50 border border-green-500/30 rounded-xl p-3 shadow-inner">
@@ -239,7 +202,6 @@
                 </section>
                 <hr class="border-blue-500/20">
 
-                <!-- 1. Escenas -->
                 <section id="sectionEscenas">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-globe mr-2"></i>Escenas 360°</h3>
@@ -261,7 +223,6 @@
                 </section>
                 <hr id="hrEscenas" class="border-blue-500/20">
 
-                <!-- 2. Puntos / Hotspots (Medidores) -->
                 <section id="sectionMedidores">
                     <div class="flex items-center justify-between mb-2 md:mb-3">
                         <h3 class="text-xs uppercase tracking-wider text-blue-400 font-bold"><i class="fas fa-bullseye mr-2"></i>Puntos / Medidores</h3>
@@ -276,7 +237,6 @@
                         <label class="text-[10px] text-gray-400 block mb-1 mt-1">Título del Hotspot</label>
                         <input id="hsTitle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 text-white mb-2" placeholder="Ej. Medidor Sector Norte">
                         
-                        <!-- Campos solicitados para Medidores -->
                         <div class="grid grid-cols-2 gap-2 mb-2">
                             <div><label class="text-[10px] text-gray-400 block mb-1">Código Hoja de Vida</label><input id="hsCodigo" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
                             <div><label class="text-[10px] text-gray-400 block mb-1">Serial Medidor</label><input id="hsSerial" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
@@ -304,9 +264,344 @@
                             <textarea id="hsObs" rows="2" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 resize-none"></textarea>
                         </div>
 
-                        <!-- Galería y 360 -->
                         <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20 mb-2">
                             <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería de Imágenes Normales</label>
                             <input type="file" id="hsGalleryFiles" multiple accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
                             <hr class="border-indigo-500/20 my-2">
-                            <label class="text-[10px] text-purple-400
+                            <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Imagen 360° (Destino)</label>
+                            <input type="file" id="hs360File" accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
+                            <input id="hs360Url" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-purple-500 text-white" placeholder="O pega URL de la imagen 360°">
+                            
+                            <div class="border-t border-purple-500/20 pt-2 mt-2">
+                                <label class="text-[10px] text-purple-400 flex justify-between mb-1">
+                                    <span>Calibrar Norte 360°</span>
+                                    <span id="valHsRot360">0°</span>
+                                </label>
+                                <input type="range" id="hsRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valHsRot360').innerText = this.value + '°';">
+                            </div>
+                        </div>
+
+                        <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20 mb-1 grid grid-cols-2 gap-2">
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-image mr-1"></i>Icono (Opcional)</label>
+                                <input type="file" id="hsIconFile" accept="image/jpeg, image/png, image/svg+xml" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
+                                <input id="hsIconUrl" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-cyan-500 text-white" placeholder="URL del icono">
+                            </div>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-palette mr-1"></i>Color Principal</label>
+                                <input type="color" id="hsColor" value="#3b82f6" class="w-full h-10 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mt-3">
+                          <button id="btnPrepareHotspot" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Posicionar</button>
+                            <button id="cancelHotspot" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                        </div>
+                    </div>
+                    <div id="hotspotList" class="space-y-2"></div>
+                </section>
+                                <hr id="hrMedidores" class="border-blue-500/20">
+
+                <section id="sectionLineas">
+                    <div class="flex items-center justify-between mb-2 md:mb-3">
+                        <h3 class="text-xs uppercase tracking-wider text-pink-400 font-bold"><i class="fas fa-project-diagram mr-2"></i>Líneas Libres</h3>
+                        <button id="startLine" class="bg-pink-600/20 text-pink-400 hover:bg-pink-600 hover:text-white transition-colors px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border border-pink-500/30"><i class="fas fa-plus mr-1"></i>Trazar</button>
+                    </div>
+
+                    <div id="lineDrawUI" class="hidden bg-pink-900/30 p-3 rounded-xl border border-pink-500/40 mb-3 text-center">
+                        <div class="flex items-center gap-2 mb-2 justify-center">
+                            <div class="w-3 h-3 rounded-full bg-pink-500 animate-ping"></div>
+                            <span class="text-xs text-pink-200 font-bold">Modo Trazado Activo</span>
+                        </div>
+                        <p class="text-[10px] text-pink-100 mb-3">Haz clics en el terreno para añadir puntos. Une puntos libremente sin cerrarlos.</p>
+                        <div class="flex gap-2">
+                            <button id="cancelLineDraw" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                            <button id="finishLineDraw" class="flex-1 bg-pink-600 hover:bg-pink-500 text-white rounded-lg py-2 text-xs font-bold shadow-lg">Terminar y Guardar</button>
+                        </div>
+                    </div>
+
+                    <div id="lineForm" class="hidden bg-black/60 border border-pink-500/40 rounded-xl p-3 mb-3 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-pink-400 to-purple-500"></div>
+                        <label class="text-[10px] text-gray-400 block mb-1 mt-1">Nombre (Opcional)</label>
+                        <input id="lineName" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-pink-500 text-white mb-2">
+                        
+                        <div class="grid grid-cols-[auto_1fr] gap-3 items-center">
+                            <div>
+                                <label class="text-[10px] text-gray-400 block mb-1">Color</label>
+                                <input type="color" id="lineColor" value="#ec4899" class="w-10 h-8 bg-gray-900 border border-gray-700 rounded cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 flex justify-between mb-1"><span>Grosor</span><span id="valLineThick">3 px</span></label>
+                                <input type="range" id="lineThickness" min="1" max="25" value="3" class="w-full accent-pink-500" oninput="document.getElementById('valLineThick').innerText = this.value + ' px'">
+                            </div>
+                        </div>
+
+                        <div class="flex gap-2 mt-3">
+                            <button id="btnPrepareLine" class="flex-1 bg-pink-600 hover:bg-pink-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Iniciar Trazo</button>
+                            <button id="cancelLine" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                        </div>
+                    </div>
+                    <div id="lineList" class="space-y-2"></div>
+                </section>
+                <hr id="hrLineas" class="border-blue-500/20">
+
+                <section>
+                    <div class="flex items-center justify-between mb-2 md:mb-3">
+                        <h3 class="text-xs uppercase tracking-wider text-cyan-400 font-bold"><i class="fas fa-tag mr-2"></i>Etiquetas de Texto</h3>
+                        <button id="startLabel" class="bg-cyan-600/20 text-cyan-400 hover:bg-cyan-600 hover:text-white transition-colors px-2.5 py-1 rounded-md text-[10px] font-bold uppercase border border-cyan-500/30"><i class="fas fa-plus mr-1"></i>Añadir</button>
+                    </div>
+
+                    <div id="labelMenu" class="hidden bg-cyan-900/30 p-3 rounded-xl border border-cyan-500/40 mb-3 animate-pulse text-center">
+                        <p class="text-[11px] text-cyan-200 mb-2"><i class="fas fa-mouse-pointer mr-1"></i> Haz clic en la escena para anclar el texto.</p>
+                        <button id="cancelLabelPlacement" class="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                    </div>
+
+                    <div id="labelForm" class="hidden bg-black/60 border border-cyan-500/40 rounded-xl p-3 mb-3 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 to-blue-500"></div>
+                        <label class="text-[10px] text-gray-400 block mb-1 mt-1">Contenido del Texto</label>
+                        <input id="lblContent" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-cyan-500 text-white mb-2" placeholder="Ej. Válvula Principal">
+
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <div>
+                                <label class="text-[10px] text-gray-400 block mb-1">Color Letra</label>
+                                <input type="color" id="lblColor" value="#ffffff" class="w-full h-8 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 block mb-1">Color Fondo</label>
+                                <input type="color" id="lblBg" value="#0f172a" class="w-full h-8 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                            </div>
+                            <div class="col-span-2">
+                                <label class="text-[10px] text-gray-400 block mb-1">Estilo Visual</label>
+                                <select id="lblStyle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-500">
+                                    <option value="simple">Solo Texto (Flotante)</option>
+                                    <option value="arrow">Texto con Flecha (Apunta al lugar)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label class="text-[10px] text-gray-400 flex justify-between mb-1"><span>Tamaño</span><span id="valLblSize">12 px</span></label>
+                        <input type="range" id="lblSize" min="8" max="48" value="12" class="w-full accent-cyan-500 mb-2" oninput="document.getElementById('valLblSize').innerText = this.value + ' px'">
+
+                        <div class="flex gap-2 mt-3">
+                            <button id="btnPrepareLabel" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Posicionar</button>
+                            <button id="cancelLabel" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                        </div>
+                    </div>
+                    <div id="labelList" class="space-y-2"></div>
+                </section>
+
+                <hr class="border-blue-500/20">
+            </div>
+            
+            <div class="p-4 border-t border-blue-500/20 bg-black/60">
+                <button id="logout" class="w-full bg-red-600/80 hover:bg-red-500 text-white rounded-xl py-3 text-xs font-bold flex items-center justify-center transition-colors shadow-lg"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar Edición</button>
+            </div>
+        </aside>
+        
+        <main class="flex-1 p-3 md:p-4 relative z-20 flex flex-col justify-between pointer-events-none w-full h-full">
+            <div class="flex items-start justify-between w-full pointer-events-auto">
+                <div class="flex flex-col gap-2 md:gap-3 w-1/2 md:w-auto ml-16 md:ml-0">
+                    <div class="glass interactive rounded-xl md:rounded-2xl px-3 py-2 md:px-6 md:py-4 border border-white/10 shadow-2xl bg-black/60 backdrop-blur-xl">
+                        <div class="text-[8px] md:text-[10px] uppercase tracking-[.25em] text-blue-400 font-bold mb-1 flex items-center gap-1 md:gap-2"><i class="fas fa-vr-cardboard"></i> Interactivo medidores</div>
+                        <div id="mainSceneTitle" class="text-sm md:text-xl font-black text-white drop-shadow-md truncate">Conectando...</div>
+                    </div>
+                    <a id="btnGoogleMaps" href="#" target="_blank" class="hidden interactive glass maps-pulse rounded-xl md:rounded-2xl px-3 py-2 md:px-5 md:py-3 flex items-center gap-2 md:gap-3 bg-blue-600/30 border-blue-500/50 hover:bg-blue-600/50 transition-colors w-fit shadow-xl group">
+                        <i class="fas fa-map-marker-alt text-lg md:text-2xl text-white group-hover:scale-110 transition-transform"></i>
+                        <div><div class="text-[8px] md:text-[10px] uppercase tracking-wide text-blue-200 font-bold">Ubicación exacta</div><div class="text-xs md:text-sm font-bold text-white">Ver Mapa</div></div>
+                    </a>
+                </div>
+                
+                <div class="flex flex-col items-end gap-2 md:gap-3 interactive mt-1 md:mr-16">
+                    <div class="flex items-center gap-2">
+                        <button id="btnToggleDeviceMode" class="hidden glass rounded-full w-9 h-9 md:w-10 md:h-10 flex items-center justify-center text-white shadow-lg bg-black/60 border border-white/10 hover:bg-black/80 transition-colors" title="Cambiar Vista">
+                            <i class="fas fa-desktop text-sm"></i>
+                        </button>
+                        
+                        <div class="glass rounded-full px-3 py-1.5 md:px-5 md:py-2.5 flex items-center gap-2 md:gap-3 cursor-pointer shadow-lg bg-black/60 border border-white/10 hover:bg-black/80 transition-colors" id="toggleAdminBtn">
+                            <i id="modeIcon" class="fas fa-eye text-blue-400 text-xs md:text-base"></i><span id="modeText" class="hidden md:inline text-xs font-semibold text-white">Modo Público</span>
+                            <div class="w-8 h-4 md:w-10 md:h-5 rounded-full bg-blue-500 relative shadow-inner border border-gray-600"><span id="adminKnob" class="absolute top-[1px] md:top-0.5 left-[1px] md:left-0.5 w-3 h-3 md:w-4 md:h-4 bg-white rounded-full transition-all"></span></div>
+                        </div>
+                    </div>
+                    <div id="loading" class="hidden glass rounded-full px-3 py-1.5 md:px-4 md:py-2 text-[10px] md:text-xs font-bold text-white bg-blue-600/90 border border-blue-400 shadow-xl"><i class="fas fa-circle-notch fa-spin mr-1 md:mr-2"></i> Procesando...</div>
+                </div>
+            </div>
+            
+            <div class="flex flex-row items-end justify-between pointer-events-auto w-full relative h-20 mb-2 pl-12 md:pl-0">
+                <div class="carousel-container flex items-center gap-1 md:gap-2 bg-black/60 backdrop-blur-xl border border-blue-500/30 p-1.5 md:p-2.5 rounded-2xl shadow-2xl w-[60vw] md:w-auto md:max-w-[60vw] absolute left-14 md:left-0 bottom-0">
+                    <button id="btnPrevScene" class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 flex items-center justify-center transition-colors flex-shrink-0"><i class="fas fa-chevron-left text-xs md:text-base"></i></button>
+                    <div id="publicSceneCarousel" class="flex gap-2 md:gap-3 overflow-x-auto scroll scroll-smooth p-1 snap-x flex-1"></div>
+                    <button id="btnNextScene" class="w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-blue-500/20 hover:bg-blue-500/40 text-blue-400 flex items-center justify-center transition-colors flex-shrink-0"><i class="fas fa-chevron-right text-xs md:text-base"></i></button>
+                </div>
+                <a id="whatsappLink" href="#" target="_blank" rel="noopener noreferrer" class="group absolute right-0 bottom-0 w-12 h-12 md:w-16 md:h-16 rounded-full bg-gradient-to-tr from-green-500 to-emerald-400 shadow-[0_10px_30px_rgba(34,197,94,0.5)] flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                    <div class="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-30"></div><i class="fab fa-whatsapp text-2xl md:text-4xl text-white drop-shadow-md"></i>
+                    <div class="absolute right-16 md:right-20 bg-black/80 backdrop-blur-md px-3 py-2 md:px-4 md:py-2.5 rounded-xl shadow-2xl text-xs md:text-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none flex items-center gap-2 md:gap-3 border border-green-500/50">
+                        <div class="w-6 h-6 md:w-8 md:h-8 rounded-full bg-green-500/20 flex items-center justify-center"><i class="fas fa-user-tie text-green-400 text-[10px] md:text-sm"></i></div>
+                        <div><div class="text-[8px] md:text-[10px] text-green-400 uppercase tracking-wide font-bold">Soporte Técnico</div><div id="whatsappName" class="leading-tight text-white font-bold">Contactar</div></div>
+                        <div class="absolute right-[-5px] top-1/2 -translate-y-1/2 w-2.5 h-2.5 md:w-3 md:h-3 bg-black/80 rotate-45 border-r border-t border-green-500/50"></div>
+                    </div>
+                </a>
+            </div>
+        </main>
+    </div>
+
+    <div id="loginModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-6 md:p-8 w-[95%] max-w-sm border border-blue-500/40 shadow-2xl bg-black/90" id="loginBox">
+            <div class="text-center mb-5 md:mb-6">
+                <div class="w-12 h-12 md:w-16 md:h-16 mx-auto rounded-full bg-blue-600/20 border border-blue-500/40 flex items-center justify-center mb-3 md:mb-4"><i class="fas fa-lock text-blue-500 text-xl md:text-2xl"></i></div>
+                <h2 class="text-lg md:text-xl font-bold text-white">Acceso Administrador</h2>
+                <p class="text-[10px] md:text-xs text-blue-200/60 mt-1 md:mt-2">Clave maestra requerida para edición.</p>
+            </div>
+            <input id="password" type="password" placeholder="••••••••" class="w-full bg-gray-900 border border-gray-600 rounded-xl px-4 py-3 outline-none text-center tracking-widest font-mono text-white focus:border-blue-500">
+            <div class="flex gap-2 md:gap-3 mt-5 md:mt-6">
+                <button id="cancelLogin" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Volver</button>
+                <button id="loginBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Desbloquear</button>
+            </div>
+            <div class="mt-4 text-center border-t border-white/10 pt-3">
+                <button id="btnOpenChangePwd" class="text-[10px] md:text-xs text-blue-400 hover:text-blue-300 font-bold uppercase tracking-wider"><i class="fas fa-key mr-1"></i> Cambiar Contraseña</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="changePwdModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
+            <h2 class="text-base md:text-lg font-bold text-white mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-key text-blue-500 mr-2"></i> Cambiar Contraseña</h2>
+            <div class="space-y-3 mt-2">
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1">Código de Seguridad</label>
+                    <input id="securityCode" type="password" placeholder="******" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none text-center tracking-widest font-mono mb-2">
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1">Nueva Contraseña</label>
+                    <input id="newPwd" type="password" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none text-center tracking-widest font-mono">
+                </div>
+                <div class="flex gap-2 mt-5 md:mt-6">
+                    <button onclick="document.getElementById('changePwdModal').classList.remove('active'); document.getElementById('loginModal').classList.add('active');" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                    <button id="saveNewPwdBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar Clave</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editSceneModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
+            <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-globe text-blue-500 mr-2"></i> Editar Escena</h2>
+            <div class="space-y-3 mt-2">
+                <div><label class="text-[10px] text-gray-400 block mb-1">Nombre Escena</label><input id="editScName" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
+                <div><label class="text-[10px] text-gray-400 block mb-1">Cambiar Foto 360° (Opcional)</label><input type="file" id="editScFile" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 cursor-pointer mb-2"></div>
+                <div><label class="text-[10px] text-gray-400 block mb-1"><i class="fas fa-map-marker-alt text-blue-400 mr-1"></i> Link Google Maps</label><input id="editScMaps" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
+                
+                <div class="border-t border-white/10 pt-2 mt-2">
+                    <label class="text-[10px] text-gray-400 flex justify-between mb-1">
+                        <span>Calibrar Norte (Girar imagen)</span>
+                        <span id="valEditScRot">0°</span>
+                    </label>
+                    <input type="range" id="editScRot" min="-180" max="180" value="0" class="w-full accent-blue-500" oninput="document.getElementById('valEditScRot').innerText = this.value + '°'; if(window.sphere) window.sphere.rotation.y = this.value * (Math.PI / 180);">
+                </div>
+
+                <div class="flex gap-2 mt-5 md:mt-6">
+                    <button onclick="document.getElementById('editSceneModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                    <button id="saveEditScBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editLineModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-pink-500/30 shadow-2xl bg-black/90">
+            <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-pink-500/30 pb-2"><i class="fas fa-project-diagram text-pink-500 mr-2"></i> Editar Línea</h2>
+            <div class="space-y-3 mt-2">
+                <button id="btnEditLinePts" class="w-full bg-blue-600/20 text-blue-400 border border-blue-500/50 hover:bg-blue-600 hover:text-white rounded-lg py-2.5 mb-1 text-[10px] md:text-xs font-bold uppercase transition-colors shadow-sm"><i class="fas fa-hand-pointer mr-1"></i> Mover Puntos 3D</button>
+
+                <div><label class="text-[10px] text-gray-400 block mb-1">Nombre</label><input id="editLnName" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-pink-500 outline-none"></div>
+                <div class="grid grid-cols-[auto_1fr] gap-3 items-center">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Color</label>
+                        <input type="color" id="editLnColor" class="w-10 h-10 bg-gray-900 border border-gray-600 rounded cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 flex justify-between mb-1"><span>Grosor</span><span id="valEditLnThick"></span></label>
+                        <input type="range" id="editLnThickness" min="1" max="25" class="w-full accent-pink-500" oninput="document.getElementById('valEditLnThick').innerText = this.value + ' px'">
+                    </div>
+                </div>
+                
+                <div class="flex gap-2 mt-5 md:mt-6">
+                    <button onclick="document.getElementById('editLineModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                    <button id="saveEditLnBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editLabelModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-cyan-500/30 shadow-2xl bg-black/90">
+            <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-cyan-500/30 pb-2"><i class="fas fa-tag text-cyan-500 mr-2"></i> Editar Etiqueta</h2>
+            <div class="space-y-3 mt-2">
+                <div><label class="text-[10px] text-gray-400 block mb-1">Contenido del Texto</label><input id="editLblContent" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-cyan-500 outline-none"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Color Letra</label>
+                        <input type="color" id="editLblColor" class="w-full h-10 bg-gray-900 border border-gray-600 rounded-lg cursor-pointer">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-gray-400 block mb-1">Color Fondo</label>
+                        <input type="color" id="editLblBg" class="w-full h-10 bg-gray-900 border border-gray-600 rounded-lg cursor-pointer">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="text-[10px] text-gray-400 block mb-1">Estilo Visual</label>
+                        <select id="editLblStyle" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-cyan-500">
+                            <option value="simple">Solo Texto (Flotante)</option>
+                            <option value="arrow">Texto con Flecha (Apunta al lugar)</option>
+                        </select>
+                    </div>
+                </div>
+                <label class="text-[10px] text-gray-400 flex justify-between mb-1 mt-2"><span>Tamaño Letra</span><span id="valEditLblSize"></span></label>
+                <input type="range" id="editLblSize" min="8" max="48" class="w-full accent-cyan-500" oninput="document.getElementById('valEditLblSize').innerText = this.value + ' px'">
+                
+                <div class="flex gap-2 mt-5 md:mt-6">
+                    <button onclick="document.getElementById('editLabelModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                    <button id="saveEditLblBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editHotspotModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
+            <h2 class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-blue-500/30 pb-2"><i class="fas fa-bullseye text-blue-500 mr-2"></i> Editar Medidor</h2>
+            <div class="space-y-3 mt-2 max-h-[65vh] overflow-y-auto scroll pr-2">
+                <div><label class="text-[10px] text-gray-400 block mb-1">Título</label><input id="editHsTitle" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
+                
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Código Hoja de Vida</label><input id="editHsCodigo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Serial Medidor</label><input id="editHsSerial" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Usuario (Nº)</label><input id="editHsUsuario" type="number" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Sector</label><input id="editHsSector" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Tipo de Medidor</label><input id="editHsTipo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Diámetro Nominal</label><input id="editHsDiametro" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Lectura Actual (m³)</label><input id="editHsLectura" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Consumo Acum. (m³)</label><input id="editHsConsumo" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-gray-400 block mb-1">Estado del Medidor</label>
+                        <select id="editHsEstadoFunc" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500">
+                            <option value="operativo">Funcionando</option>
+                            <option value="parado">Parado</option>
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="text-[10px] text-gray-400 block mb-1">Fecha de Actualización</label>
+                        <input id="editHsFechaAct" type="date" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 cursor-pointer">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1">Observaciones</label>
+                    <textarea id="editHsObs" rows="2" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"></textarea>
+                </div>
+
+                <!-- GALERÍA CON MINIATURAS Y BOTÓN BORRAR (ADMIN) -->
+                <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20">
+                    <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería de Imágenes</label>
+                    <div id="editHsGalleryThumbs" class="flex flex-wrap gap-2 mb-2"></div>
+                    <input type="file" id="editHsGalleryFiles" multiple accept="image/jpeg, image/png, image/webp" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                    <hr class
