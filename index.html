@@ -35,6 +35,9 @@
         /* Animaciones Puntos Interactivos */
         .hotspot-icon { font-size: 32px; text-shadow: 0 4px 15px rgba(0,0,0,0.8); transition: transform 0.2s; }
         .hotspot-container:hover .hotspot-icon { transform: scale(1.15) translateY(-5px); }
+        .pub-chip { padding: 4px 10px; border-radius: 9999px; font-size: 10px; font-weight: 700; border: 1px solid #374151; background: rgba(17,24,39,.8); color: #d1d5db; transition: all .2s; cursor: pointer; }
+        .pub-chip:hover { border-color: #3b82f6; }
+        .pub-chip.active { background: #2563eb; border-color: #60a5fa; color: #fff; }
         .hotspot-pulse { position: absolute; width: 30px; height: 30px; border-radius: 50%; z-index: -1; animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite; }
         @keyframes ping-slow { 75%, 100% { transform: scale(2); opacity: 0; } }
         @keyframes float-pin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
@@ -168,8 +171,14 @@
                     <label class="text-[9px] text-gray-400 uppercase font-bold tracking-wider mb-1 block">Búsqueda Avanzada</label>
                     <div class="relative">
                         <i class="fas fa-search absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
-                        <input id="filterSearch" type="text" placeholder="Buscar por Nombre, Serial, Sector, Usuario, Lectura..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg pl-7 pr-2 py-1.5 text-[10px] text-white outline-none focus:border-blue-500 transition-colors">
+                        <input id="filterSearch" type="text" placeholder="Buscar por Nombre, Serial, Sector, Identidad, Lectura..." class="w-full bg-gray-900/80 border border-gray-700 rounded-lg pl-7 pr-2 py-1.5 text-[10px] text-white outline-none focus:border-blue-500 transition-colors">
                     </div>
+                </div>
+                <div id="publicCatChips" class="flex flex-wrap gap-1.5">
+                    <button data-cat="todos" class="pub-chip">Todos</button>
+                    <button data-cat="medidor" class="pub-chip">Medidores</button>
+                    <button data-cat="acuifero" class="pub-chip">Acuíferos</button>
+                    <button data-cat="dispensador" class="pub-chip">Dispensadores</button>
                 </div>
             </div>
 
@@ -313,6 +322,70 @@
                     <div id="hotspotList" class="space-y-2"></div>
                 </section>
                 <hr id="hrMedidores" class="border-blue-500/20">
+
+                <!-- Categoría: Acuíferos -->
+                <section id="sectionAcuiferos">
+                    <div class="flex items-center justify-between mb-2 md:mb-3">
+                        <h3 class="text-xs uppercase tracking-wider text-cyan-400 font-bold"><i class="fas fa-water mr-2"></i>Acuíferos</h3>
+                        <button data-cat="acuifero" class="startPoiBtn bg-cyan-900/50 text-cyan-400 hover:bg-cyan-800 hover:text-white transition-colors px-3 py-1 rounded-md text-[10px] font-bold uppercase border border-cyan-700/50">+ CREAR</button>
+                    </div>
+                    <div id="poiHost-acuifero">
+                        <div id="poiWrap">
+                            <div id="poiMenu" class="hidden bg-blue-900/30 p-3 rounded-xl border border-blue-500/40 mb-3 animate-pulse text-center">
+                                <p id="poiMenuText" class="text-[11px] text-blue-200 mb-2"></p>
+                                <button id="cancelPoiPlacement" class="w-full bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                            </div>
+                            <div id="poiForm" class="hidden bg-black/60 border border-blue-500/40 rounded-xl p-3 mb-3 relative overflow-hidden">
+                                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-cyan-500"></div>
+                                <div id="poiFormTitle" class="text-[11px] font-bold text-white mt-1 mb-2"></div>
+                                <label class="text-[10px] text-gray-400 block mb-1">Nombre</label>
+                                <input id="poiNombre" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs outline-none focus:border-blue-500 text-white mb-2">
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <div><label class="text-[10px] text-gray-400 block mb-1">Nº de Identidad</label><input id="poiIdentidad" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                                    <div><label class="text-[10px] text-gray-400 block mb-1">Serial (si aplica)</label><input id="poiSerial" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                                    <textarea id="poiDescripcion" rows="3" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500 resize-none"></textarea>
+                                </div>
+                                <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20 mb-2">
+                                    <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería de Imágenes</label>
+                                    <input type="file" id="poiGalleryFiles" multiple accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
+                                    <hr class="border-indigo-500/20 my-2">
+                                    <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Imagen 360° (Destino)</label>
+                                    <input type="file" id="poi360File" accept="image/jpeg, image/png" class="w-full text-[10px] text-gray-400 mb-1 cursor-pointer">
+                                    <input id="poi360Url" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-2 py-1.5 text-[10px] outline-none focus:border-purple-500 text-white" placeholder="O pega URL de la imagen 360°">
+                                    <div class="border-t border-purple-500/20 pt-2 mt-2">
+                                        <label class="text-[10px] text-purple-400 flex justify-between mb-1"><span>Calibrar Norte 360°</span><span id="valPoiRot360">0°</span></label>
+                                        <input type="range" id="poiRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valPoiRot360').innerText = this.value + '°';">
+                                    </div>
+                                </div>
+                                <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20 mb-1">
+                                    <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-palette mr-1"></i>Color Principal</label>
+                                    <input type="color" id="poiColor" value="#06b6d4" class="w-full h-10 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                                </div>
+                                <div class="flex gap-2 mt-3">
+                                    <button id="btnPreparePoi" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-xs font-bold transition-colors">Posicionar</button>
+                                    <button id="cancelPoi" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-lg py-2 text-xs font-bold">Cancelar</button>
+                                </div>
+                            </div>
+                        </div>
+</div>
+                    <div id="poiList-acuifero" class="space-y-2"></div>
+                </section>
+                <hr id="hrAcuiferos" class="border-blue-500/20">
+
+                <!-- Categoría: Dispensadores de agua -->
+                <section id="sectionDispensadores">
+                    <div class="flex items-center justify-between mb-2 md:mb-3">
+                        <h3 class="text-xs uppercase tracking-wider text-indigo-400 font-bold"><i class="fas fa-glass-water mr-2"></i>Dispensadores de agua</h3>
+                        <button data-cat="dispensador" class="startPoiBtn bg-indigo-900/50 text-indigo-400 hover:bg-indigo-800 hover:text-white transition-colors px-3 py-1 rounded-md text-[10px] font-bold uppercase border border-indigo-700/50">+ CREAR</button>
+                    </div>
+                    <div id="poiHost-dispensador"></div>
+                    <div id="poiList-dispensador" class="space-y-2"></div>
+                </section>
+                <hr id="hrDispensadores" class="border-blue-500/20">
+
 
                 <!-- 3. Líneas Libres 3D -->
                 <section id="sectionLineas">
@@ -587,6 +660,70 @@
         </div>
     </div>
 
+    <!-- Modal Información (Acuífero / Dispensador) -->
+    <div id="infoPoiModal" class="modal-overlay interactive" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="glass rounded-2xl p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90 text-center">
+            <div id="poiModalIconContainer" class="w-16 h-16 mx-auto flex items-center justify-center mb-3"></div>
+            <div id="poiModalCat" class="text-[10px] uppercase tracking-widest font-bold mb-1"></div>
+            <h2 id="poiModalTitle" class="text-xl font-bold text-white leading-tight mb-4 border-b border-white/10 pb-2"></h2>
+            <div class="max-h-[50vh] overflow-y-auto scroll px-2 bg-black/40 rounded-lg p-4 border border-white/5 text-left mb-4 space-y-2 text-xs">
+                <div class="grid grid-cols-[120px_1fr] gap-x-2 gap-y-2">
+                    <span class="text-gray-400 font-bold">Nº de Identidad:</span> <span id="poiModalIdentidad" class="text-white"></span>
+                    <span id="poiModalSerialLbl" class="text-gray-400 font-bold">Serial:</span> <span id="poiModalSerial" class="text-white"></span>
+                </div>
+                <div class="border-t border-white/10 pt-2 mt-2">
+                    <span class="text-gray-400 font-bold block mb-1">Descripción:</span>
+                    <span id="poiModalDesc" class="text-white italic block"></span>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button id="poiModalBtnGallery" class="hidden flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2.5 text-xs font-bold shadow-lg transition-colors"><i class="fas fa-images mr-1"></i> Galería</button>
+                <button id="poiModalBtn360" class="hidden flex-1 bg-purple-600 hover:bg-purple-500 text-white rounded-xl py-2.5 text-xs font-bold shadow-lg transition-colors"><i class="fas fa-vr-cardboard mr-1"></i> Ver 360°</button>
+            </div>
+            <button class="mt-3 w-full bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 text-sm font-bold shadow-lg transition-colors" onclick="document.getElementById('infoPoiModal').classList.remove('active')">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- Modal Editar (Acuífero / Dispensador) -->
+    <div id="editPoiModal" class="modal-overlay interactive">
+        <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
+            <h2 id="editPoiHeader" class="text-base md:text-lg font-bold text-white mb-3 md:mb-4 border-b border-blue-500/30 pb-2"></h2>
+            <div class="space-y-3 mt-2 max-h-[65vh] overflow-y-auto scroll pr-2">
+                <div><label class="text-[10px] text-gray-400 block mb-1">Nombre</label><input id="editPoiNombre" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none"></div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Nº de Identidad</label><input id="editPoiIdentidad" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                    <div><label class="text-[10px] text-gray-400 block mb-1">Serial (si aplica)</label><input id="editPoiSerial" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500"></div>
+                </div>
+                <div>
+                    <label class="text-[10px] text-gray-400 block mb-1">Descripción</label>
+                    <textarea id="editPoiDescripcion" rows="3" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-sm text-white focus:border-blue-500 outline-none resize-none"></textarea>
+                </div>
+                <div class="bg-indigo-900/10 p-2 rounded-lg border border-indigo-500/20">
+                    <label class="text-[10px] text-indigo-400 block mb-1"><i class="fas fa-images mr-1"></i>Galería actual (pulsa la X para borrar)</label>
+                    <div id="editPoiGallery" class="flex gap-2 flex-wrap mb-2"></div>
+                    <label class="text-[10px] text-indigo-400 block mb-1">Añadir a Galería</label>
+                    <input type="file" id="editPoiGalleryFiles" multiple accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                    <hr class="border-indigo-500/20 my-2">
+                    <label class="text-[10px] text-purple-400 block mb-1"><i class="fas fa-vr-cardboard mr-1"></i>Cambiar Escena 360°</label>
+                    <input type="file" id="editPoi360File" accept="image/jpeg, image/png" class="w-full text-xs text-gray-400 mb-1 cursor-pointer">
+                    <input id="editPoi360Url" class="w-full bg-gray-900 border border-gray-600 rounded-lg px-3 py-2 text-xs text-white focus:border-purple-500 outline-none" placeholder="O pega URL 360°">
+                    <div class="border-t border-purple-500/20 pt-2 mt-2">
+                        <label class="text-[10px] text-purple-400 flex justify-between mb-1"><span>Calibrar Norte 360°</span><span id="valEditPoiRot360">0°</span></label>
+                        <input type="range" id="editPoiRot360" min="-180" max="180" value="0" class="w-full accent-purple-500" oninput="document.getElementById('valEditPoiRot360').innerText = this.value + '°'; if(typeof sphere !== 'undefined' && inSubScene && currentSubSceneHotspotId === editingPoiId) sphere.rotation.y = this.value * (Math.PI / 180);">
+                    </div>
+                </div>
+                <div class="bg-cyan-900/10 p-2 rounded-lg border border-cyan-500/20">
+                    <label class="text-[10px] text-cyan-400 block mb-1"><i class="fas fa-palette mr-1"></i>Color Principal</label>
+                    <input type="color" id="editPoiColor" class="w-full h-10 bg-gray-900 border border-gray-700 rounded-lg cursor-pointer">
+                </div>
+            </div>
+            <div class="flex gap-2 mt-5 md:mt-6 border-t border-white/10 pt-3">
+                <button onclick="document.getElementById('editPoiModal').classList.remove('active')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold">Cancelar</button>
+                <button id="saveEditPoiBtn" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 md:py-3 text-xs md:text-sm font-bold shadow-lg">Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Editar Hotspot (Medidor) -->
     <div id="editHotspotModal" class="modal-overlay interactive">
         <div class="glass rounded-2xl p-5 md:p-6 w-[95%] max-w-sm border border-blue-500/30 shadow-2xl bg-black/90">
@@ -700,6 +837,14 @@
         let isAdmin = false; 
         
         let isDrawingHotspot = false; let movingHotspotId = null; let pendingHotspotData = null; let editingHsId = null;
+        // Categorías adicionales (se guardan en el mismo arreglo hotspots con el campo "categoria"; los medidores existentes no cambian)
+        const POI_CATS = {
+            acuifero:    { label: 'Acuífero',            plural: 'Acuíferos',            icon: 'fa-water',       color: '#06b6d4', shape: 'diamond' },
+            dispensador: { label: 'Dispensador de agua', plural: 'Dispensadores de agua', icon: 'fa-glass-water', color: '#6366f1', shape: 'square' }
+        };
+        let currentPoiCat = null; let editingPoiId = null; let publicCatFilter = 'todos';
+        function getCat(hs) { return hs.categoria || 'medidor'; }
+        function isPoi(hs) { return !!(hs && POI_CATS[hs.categoria]); }
         let isDrawingLine = false; let activeLinePoints = []; let activeLineMesh = null;
         let currentLineColor = '#ec4899'; let currentLineThickness = 3;
         let editingLineId = null; 
@@ -860,6 +1005,7 @@
         }
 
         function openHotspotModal(hs) {
+            if (isPoi(hs)) { openPoiModal(hs); return; }
             const est = hs.estadoFunc || 'operativo';
             if(est === 'operativo') {
                 $('hsModalEstadoFunc').textContent = 'Funcionando';
@@ -949,6 +1095,13 @@
             if(sc.hotspots) {
                 sc.hotspots.forEach(hs => {
                     const el = document.createElement('div'); el.className = 'marker-container hotspot-container interactive cursor-pointer';
+                    if (isPoi(hs)) {
+                        const pc = hs.color || POI_CATS[hs.categoria].color;
+                        el.innerHTML = `<div class="hotspot-pulse" style="background-color: ${pc}80;"></div><div class="hotspot-icon w-10 h-10 md:w-12 md:h-12 flex items-center justify-center mb-2">${poiShapeHTML(hs, 'md')}</div><div class="label3d bg-black/80 shadow-xl px-3 py-1 mt-1 rounded-full" style="border: 1px solid ${pc}80;"><span class="text-white text-[9px] md:text-[10px] font-bold whitespace-nowrap tracking-wider uppercase">${escapeHTML(hs.title)}</span></div>`;
+                        el.onclick = () => openHotspotModal(hs);
+                        UI.labels.appendChild(el); meshes.labels.push({ element: el, position: new THREE.Vector3(hs.position.x, hs.position.y, hs.position.z) });
+                        return;
+                    }
                     
                     const hsColor = hs.color || '#3b82f6';
                     
@@ -1039,7 +1192,7 @@
             if (isDrawingHotspot || movingHotspotId) {
                 if(!sc.hotspots) sc.hotspots = [];
                 if (movingHotspotId) { const hs = sc.hotspots.find(h => h.id === movingHotspotId); if(hs) hs.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; movingHotspotId = null; showToast("Medidor reubicado", "success"); } 
-                else { pendingHotspotData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; sc.hotspots.push(pendingHotspotData); showToast("Medidor creado", "success"); }
+                else { pendingHotspotData.position = { x: hit.point.x, y: hit.point.y, z: hit.point.z }; sc.hotspots.push(pendingHotspotData); showToast((isPoi(pendingHotspotData) ? POI_CATS[pendingHotspotData.categoria].label : "Medidor") + " creado", "success"); }
                 await saveStateToFirebase(); cancelHotspot(); rebuildSceneObjects(); renderHotspotList(); return;
             }
             
@@ -1074,11 +1227,11 @@
         function cancelHotspot() { 
             isDrawingHotspot = false; movingHotspotId = null; pendingHotspotData = null; 
             $('hotspotMenu').classList.add('hidden'); $('hotspotForm').classList.add('hidden'); $('startHotspot').classList.remove('hidden'); 
-            renderer.domElement.style.cursor = 'grab'; 
+            poiReset(); renderer.domElement.style.cursor = 'grab'; 
         }
 
         $('startHotspot').onclick = () => { 
-            cancelLineDraw(); cancelLabelPlacement(); 
+            poiReset(); cancelLineDraw(); cancelLabelPlacement(); 
             $('hsTitle').value = '';
             $('hsCodigo').value = ''; $('hsSerial').value = ''; $('hsUsuario').value = ''; $('hsSector').value = '';
             $('hsTipo').value = ''; $('hsDiametro').value = ''; $('hsLectura').value = ''; $('hsConsumo').value = '';
@@ -1145,8 +1298,8 @@
         $('cancelHotspotPlacement').onclick = cancelHotspot;
 
         function renderHotspotList() {
-            const c = $('hotspotList'); c.innerHTML = ''; const sc = getCurrentScene(); if (!sc.hotspots || !sc.hotspots.length) return;
-            sc.hotspots.forEach(hs => {
+            const c = $('hotspotList'); c.innerHTML = ''; const sc = getCurrentScene(); renderPoiLists(); if (!sc.hotspots || !sc.hotspots.length) return;
+            sc.hotspots.filter(hs => !isPoi(hs)).forEach(hs => {
                 const est = hs.estadoFunc || 'operativo';
                 const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
                 const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
@@ -1439,6 +1592,236 @@
         }
         $('saveContactConfig').onclick = async () => { state.contact.name = $('cfgContactName').value.trim(); state.contact.phone = $('cfgContactPhone').value.trim(); await saveStateToFirebase(); updateContactUI(); showToast("Contacto actualizado", "success"); };
 
+        // --- CATEGORÍAS ADICIONALES: ACUÍFEROS Y DISPENSADORES DE AGUA ---
+        // Figura única por categoría: Acuífero = rombo + ícono de agua subterránea; Dispensador = cuadrado redondeado + vaso de agua.
+        function poiShapeHTML(hs, size) {
+            const cat = POI_CATS[hs.categoria]; const c = hs.color || cat.color;
+            const S = {
+                sm: { sq: 'w-7 h-7', di: 'w-5 h-5', ic: 'text-[10px]', bw: 1 },
+                md: { sq: 'w-10 h-10 md:w-12 md:h-12', di: 'w-7 h-7 md:w-8 md:h-8', ic: 'text-lg', bw: 2 },
+                lg: { sq: 'w-14 h-14', di: 'w-10 h-10', ic: 'text-2xl', bw: 2 }
+            }[size || 'md'];
+            const base = `background-color:${c}33; border:${S.bw}px solid ${c}; box-shadow:0 0 ${S.bw * 10}px ${c}B3;`;
+            if (cat.shape === 'diamond') {
+                return `<div class="${S.di} flex items-center justify-center shrink-0" style="${base} border-radius:${S.bw * 4}px; transform:rotate(45deg);"><i class="fas ${cat.icon} ${S.ic} inline-block" style="color:${c}; transform:rotate(-45deg);"></i></div>`;
+            }
+            return `<div class="${S.sq} flex items-center justify-center shrink-0" style="${base} border-radius:${S.bw * 6}px;"><i class="fas ${cat.icon} ${S.ic} inline-block" style="color:${c};"></i></div>`;
+        }
+
+        function poiReset() {
+            if (!$('poiMenu')) return;
+            $('poiMenu').classList.add('hidden'); $('poiForm').classList.add('hidden');
+            document.querySelectorAll('.startPoiBtn').forEach(b => b.classList.remove('hidden'));
+        }
+
+        function showPoiMenu(key, html) {
+            $('poiHost-' + key).appendChild($('poiWrap'));
+            $('poiMenuText').innerHTML = html;
+            $('poiMenu').classList.remove('hidden');
+        }
+
+        document.querySelectorAll('.startPoiBtn').forEach(btn => {
+            btn.onclick = () => {
+                const key = btn.dataset.cat; const cat = POI_CATS[key];
+                cancelHotspot(); cancelLineDraw(); cancelLabelPlacement();
+                currentPoiCat = key;
+                $('poiHost-' + key).appendChild($('poiWrap'));
+                $('poiFormTitle').textContent = 'Nuevo: ' + cat.label;
+                $('poiNombre').value = ''; $('poiIdentidad').value = ''; $('poiSerial').value = ''; $('poiDescripcion').value = '';
+                $('poiGalleryFiles').value = ''; $('poi360File').value = ''; $('poi360Url').value = '';
+                $('poiRot360').value = 0; $('valPoiRot360').innerText = '0°';
+                $('poiColor').value = cat.color;
+                $('poiForm').classList.remove('hidden'); btn.classList.add('hidden');
+            };
+        });
+
+        $('btnPreparePoi').onclick = async () => {
+            const key = currentPoiCat; if (!key) return;
+            try {
+                $('loading').classList.remove('hidden');
+                const gal = $('poiGalleryFiles').files; let galleryUrls = [];
+                if (gal.length > 0) galleryUrls = await Promise.all(Array.from(gal).map(f => uploadImageToImgBB(f)));
+                let url360 = $('poi360Url').value.trim();
+                if ($('poi360File').files[0]) url360 = await uploadImageToImgBB($('poi360File').files[0]);
+                pendingHotspotData = {
+                    id: 'hs-' + Date.now(), categoria: key,
+                    title: $('poiNombre').value.trim() || POI_CATS[key].label,
+                    identidad: $('poiIdentidad').value.trim(), serial: $('poiSerial').value.trim(), descripcion: $('poiDescripcion').value.trim(),
+                    color: $('poiColor').value, galleryUrls, url360, rot360: parseInt($('poiRot360').value) || 0
+                };
+                $('poiForm').classList.add('hidden');
+                showPoiMenu(key, '<i class="fas fa-mouse-pointer mr-1"></i> Haz clic en la escena para colocar el punto.');
+                isDrawingHotspot = true; renderer.domElement.style.cursor = 'crosshair';
+            } catch (e) {
+                console.error(e); showToast("Error procesando archivos", "error");
+            } finally {
+                $('loading').classList.add('hidden');
+            }
+        };
+        $('cancelPoi').onclick = cancelHotspot;
+        $('cancelPoiPlacement').onclick = cancelHotspot;
+
+        function renderPoiLists() {
+            const sc = getCurrentScene();
+            Object.keys(POI_CATS).forEach(key => {
+                const c = $('poiList-' + key); if (!c) return; c.innerHTML = '';
+                (sc && sc.hotspots ? sc.hotspots : []).filter(h => h.categoria === key).forEach(hs => {
+                    const div = document.createElement('div'); div.className = 'flex items-center justify-between p-2 rounded-xl border border-white/5 bg-black/50';
+                    div.innerHTML = `<div class="flex items-center gap-3 overflow-hidden"><span class="w-7 h-7 flex items-center justify-center shrink-0">${poiShapeHTML(hs, 'sm')}</span><div class="truncate"><div class="text-[11px] font-bold text-white truncate">${escapeHTML(hs.title)}</div><div class="text-[9px] text-gray-400 truncate">ID: ${escapeHTML(hs.identidad || 'N/A')}${hs.serial ? ' · Serial: ' + escapeHTML(hs.serial) : ''}</div></div></div><div class="flex gap-1 shrink-0"><button class="edit-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-edit"></i></button><button class="move-btn text-blue-400 p-1 hover:bg-white/10 rounded"><i class="fas fa-arrows-alt"></i></button><button class="del-btn text-red-500 p-1 hover:bg-white/10 rounded"><i class="fas fa-trash"></i></button></div>`;
+                    div.querySelector('.del-btn').onclick = () => openDeleteModal('hotspot', hs.id, hs.title);
+                    div.querySelector('.edit-btn').onclick = () => openPoiEdit(hs);
+                    div.querySelector('.move-btn').onclick = () => {
+                        cancelHotspot(); cancelLineDraw(); cancelLabelPlacement();
+                        movingHotspotId = hs.id;
+                        showPoiMenu(key, '<i class="fas fa-mouse-pointer mr-1"></i> Haz clic en la escena para reubicar el punto.');
+                        renderer.domElement.style.cursor = 'crosshair';
+                    };
+                    c.appendChild(div);
+                });
+            });
+        }
+
+        function openPoiModal(hs) {
+            const cat = POI_CATS[hs.categoria]; const col = hs.color || cat.color;
+            $('poiModalIconContainer').innerHTML = poiShapeHTML(hs, 'lg');
+            $('poiModalCat').textContent = cat.label; $('poiModalCat').style.color = col;
+            $('poiModalTitle').textContent = hs.title || cat.label;
+            $('poiModalIdentidad').textContent = hs.identidad || '-';
+            const hasSerial = !!(hs.serial && String(hs.serial).trim());
+            $('poiModalSerialLbl').classList.toggle('hidden', !hasSerial); $('poiModalSerial').classList.toggle('hidden', !hasSerial);
+            $('poiModalSerial').textContent = hs.serial || '';
+            $('poiModalDesc').textContent = hs.descripcion || 'Sin descripción';
+            const btnGal = $('poiModalBtnGallery');
+            if (hs.galleryUrls && hs.galleryUrls.length > 0) {
+                btnGal.classList.remove('hidden');
+                btnGal.onclick = () => { $('infoPoiModal').classList.remove('active'); openFullGallery(hs.galleryUrls); };
+            } else { btnGal.classList.add('hidden'); }
+            const btn360 = $('poiModalBtn360');
+            if (hs.url360) {
+                btn360.classList.remove('hidden');
+                btn360.onclick = () => { $('infoPoiModal').classList.remove('active'); loadSubScene(hs.url360, hs.title, hs.id); };
+            } else { btn360.classList.add('hidden'); }
+            $('infoPoiModal').classList.add('active');
+        }
+
+        function renderEditPoiGallery() {
+            const c = $('editPoiGallery'); c.innerHTML = '';
+            const sc = getCurrentScene(); const hs = sc && sc.hotspots.find(h => h.id === editingPoiId);
+            const urls = (hs && hs.galleryUrls) || [];
+            if (urls.length === 0) { c.innerHTML = '<span class="text-[10px] text-gray-500">Sin imágenes.</span>'; return; }
+            urls.forEach((url, idx) => {
+                const w = document.createElement('div'); w.className = 'relative shrink-0';
+                w.innerHTML = `<img src="${url}" class="w-14 h-14 object-cover rounded-lg border border-white/10"><button type="button" title="Eliminar imagen" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-lg border border-red-300"><i class="fas fa-times"></i></button>`;
+                w.querySelector('button').onclick = async () => {
+                    if (!confirm('¿Eliminar esta imagen de la galería?')) return;
+                    hs.galleryUrls.splice(idx, 1);
+                    await saveStateToFirebase();
+                    renderEditPoiGallery(); renderPublicMedidoresList();
+                    showToast('Imagen eliminada', 'success');
+                };
+                c.appendChild(w);
+            });
+        }
+
+        function openPoiEdit(hs) {
+            const cat = POI_CATS[hs.categoria];
+            editingPoiId = hs.id;
+            $('editPoiHeader').innerHTML = `<i class="fas ${cat.icon} mr-2" style="color:${hs.color || cat.color}"></i> Editar ${escapeHTML(cat.label)}`;
+            $('editPoiNombre').value = hs.title || '';
+            $('editPoiIdentidad').value = hs.identidad || '';
+            $('editPoiSerial').value = hs.serial || '';
+            $('editPoiDescripcion').value = hs.descripcion || '';
+            $('editPoiColor').value = hs.color || cat.color;
+            $('editPoiGalleryFiles').value = ''; $('editPoi360File').value = '';
+            $('editPoi360Url').value = hs.url360 || '';
+            $('editPoiRot360').value = hs.rot360 || 0; $('valEditPoiRot360').innerText = (hs.rot360 || 0) + '°';
+            renderEditPoiGallery();
+            $('editPoiModal').classList.add('active');
+        }
+
+        $('saveEditPoiBtn').onclick = async () => {
+            const sc = getCurrentScene(); const hs = sc.hotspots.find(h => h.id === editingPoiId); if (!hs) return;
+            try {
+                $('loading').classList.remove('hidden');
+                hs.title = $('editPoiNombre').value.trim() || POI_CATS[hs.categoria].label;
+                hs.identidad = $('editPoiIdentidad').value.trim();
+                hs.serial = $('editPoiSerial').value.trim();
+                hs.descripcion = $('editPoiDescripcion').value.trim();
+                hs.color = $('editPoiColor').value;
+                const files = $('editPoiGalleryFiles').files;
+                if (files.length > 0) {
+                    const newUrls = await Promise.all(Array.from(files).map(f => uploadImageToImgBB(f)));
+                    if (!hs.galleryUrls) hs.galleryUrls = [];
+                    hs.galleryUrls.push(...newUrls);
+                }
+                let url360 = $('editPoi360Url').value.trim();
+                if ($('editPoi360File').files[0]) url360 = await uploadImageToImgBB($('editPoi360File').files[0]);
+                hs.url360 = url360;
+                hs.rot360 = parseInt($('editPoiRot360').value) || 0;
+                await saveStateToFirebase();
+                $('editPoiModal').classList.remove('active');
+                rebuildSceneObjects(); renderHotspotList(); renderPublicMedidoresList();
+            } catch (e) {
+                console.error(e); showToast("Error guardando los cambios", "error");
+            } finally {
+                $('loading').classList.add('hidden');
+            }
+        };
+
+        // Tarjeta de la barra pública para acuíferos / dispensadores
+        function buildPoiCard(hs) {
+            const cat = POI_CATS[hs.categoria]; const col = hs.color || cat.color;
+            const card = document.createElement('div');
+            card.className = 'glass bg-black/50 border border-white/10 rounded-xl p-3 md:p-4 transition-colors cursor-pointer shadow-lg group';
+            card.onmouseover = () => { card.style.borderColor = col + '80'; };
+            card.onmouseout = () => { card.style.borderColor = 'rgba(255,255,255,0.1)'; };
+            const desc = hs.descripcion ? `<div class="text-[10px] md:text-[11px] text-gray-300 mt-2 leading-tight" style="display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;">${escapeHTML(hs.descripcion)}</div>` : '';
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-2 gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <span class="w-7 h-7 flex items-center justify-center shrink-0">${poiShapeHTML(hs, 'sm')}</span>
+                        <h3 class="font-bold text-white text-sm md:text-base truncate" style="text-shadow: 0 0 5px ${col}40;">${escapeHTML(hs.title)}</h3>
+                    </div>
+                    <span class="bg-gray-800/80 font-bold px-2 py-1 rounded text-[10px] whitespace-nowrap shrink-0" style="color: ${col}; border: 1px solid ${col}50;">${cat.label}</span>
+                </div>
+                <div class="flex flex-col gap-1 text-[10px] md:text-[11px] text-gray-300 leading-tight">
+                    ${hs.identidad ? `<div><span class="text-gray-400 font-bold">Nº de Identidad:</span> ${escapeHTML(hs.identidad)}</div>` : ''}
+                    ${hs.serial ? `<div><span class="text-gray-400 font-bold">Serial:</span> ${escapeHTML(hs.serial)}</div>` : ''}
+                </div>
+                ${desc}
+                ${publicGalleryHTML(hs, col)}`;
+            card.onclick = () => openHotspotModal(hs);
+            return card;
+        }
+
+        // Filtros por categoría en la barra pública
+        function updateCatChips() {
+            document.querySelectorAll('#publicCatChips .pub-chip').forEach(b => b.classList.toggle('active', b.dataset.cat === publicCatFilter));
+        }
+        document.querySelectorAll('#publicCatChips .pub-chip').forEach(b => {
+            b.onclick = () => { publicCatFilter = b.dataset.cat; updateCatChips(); renderPublicMedidoresList(); };
+        });
+        updateCatChips();
+
+        function publicGalleryHTML(hs, hsColor) {
+            let galleryHTML = '';
+                const galUrls = hs.galleryUrls || [];
+                if (galUrls.length > 0 || isAdmin) {
+                    galleryHTML = `<div class="flex gap-2 overflow-x-auto scroll snap-x mt-3 pb-2 border-t border-white/5 pt-2">`;
+                    galUrls.forEach((url, idx) => {
+                        galleryHTML += `<div class="relative shrink-0 snap-start">
+                            <img src="${url}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-white/10 cursor-pointer shadow-md transition-colors" style="border-color: ${hsColor}40;" onmouseover="this.style.borderColor='${hsColor}'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'" onclick="openFullGallery(${JSON.stringify(galUrls).replace(/"/g, '&quot;')}); event.stopPropagation();">
+                            ${isAdmin ? `<button type="button" title="Eliminar imagen" onclick="adminDeleteGalleryImage('${hs.id}', ${idx}, event)" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-lg border border-red-300 z-10"><i class="fas fa-times"></i></button>` : ''}
+                        </div>`;
+                    });
+                    if (isAdmin) {
+                        galleryHTML += `<button type="button" title="Insertar imágenes" onclick="adminPickGalleryImages('${hs.id}', event)" class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg border-2 border-dashed border-indigo-400/60 hover:border-indigo-300 hover:bg-indigo-500/10 text-indigo-300 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors"><i class="fas fa-plus text-sm"></i>Añadir</button>`;
+                    }
+                    galleryHTML += `</div>`;
+                }
+            return galleryHTML;
+        }
+
         // --- EDICIÓN DE GALERÍA (SOLO MODO ADMINISTRADOR) ---
         async function adminDeleteGalleryImage(hsId, idx, ev) {
             if (ev) ev.stopPropagation();
@@ -1486,12 +1869,15 @@
             const sc = getCurrentScene();
             
             if (!sc || !sc.hotspots || sc.hotspots.length === 0) {
-                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6"><i class="fas fa-info-circle mb-2 text-xl block"></i>No hay medidores registrados en esta escena.</div>';
+                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6"><i class="fas fa-info-circle mb-2 text-xl block"></i>No hay elementos registrados en esta escena.</div>';
                 return;
             }
 
             const query = $('filterSearch').value.toLowerCase();
             const filtered = sc.hotspots.filter(hs => {
+                if (publicCatFilter !== 'todos' && getCat(hs) !== publicCatFilter) return false;
+                const identMatch = (hs.identidad || '').toString().toLowerCase().includes(query);
+                const descMatch = (hs.descripcion || '').toLowerCase().includes(query);
                 const titleMatch = (hs.title || '').toLowerCase().includes(query);
                 const serialMatch = (hs.serial || '').toLowerCase().includes(query);
                 const sectorMatch = (hs.sector || '').toLowerCase().includes(query);
@@ -1500,36 +1886,23 @@
                 const lecturaMatch = (hs.lectura || '').toLowerCase().includes(query);
                 const consumoMatch = (hs.consumo || '').toLowerCase().includes(query);
                 
-                return titleMatch || serialMatch || sectorMatch || codigoMatch || usuarioMatch || lecturaMatch || consumoMatch;
+                return titleMatch || serialMatch || sectorMatch || codigoMatch || usuarioMatch || lecturaMatch || consumoMatch || identMatch || descMatch;
             });
 
             if (filtered.length === 0) {
-                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6">Ningún medidor coincide con tu búsqueda.</div>';
+                c.innerHTML = '<div class="text-center text-gray-500 text-[11px] py-6">Ningún elemento coincide con tu búsqueda.</div>';
                 return;
             }
 
             filtered.forEach(hs => {
+                if (isPoi(hs)) { c.appendChild(buildPoiCard(hs)); return; }
                 const est = hs.estadoFunc || 'operativo';
                 const estText = est === 'operativo' ? 'Funcionando' : 'Parado';
                 const estColor = est === 'operativo' ? 'text-green-400' : 'text-red-400';
                 const estIcon = est === 'operativo' ? 'fa-check-circle' : 'fa-exclamation-circle';
                 const hsColor = hs.color || '#3b82f6';
 
-                let galleryHTML = '';
-                const galUrls = hs.galleryUrls || [];
-                if (galUrls.length > 0 || isAdmin) {
-                    galleryHTML = `<div class="flex gap-2 overflow-x-auto scroll snap-x mt-3 pb-2 border-t border-white/5 pt-2">`;
-                    galUrls.forEach((url, idx) => {
-                        galleryHTML += `<div class="relative shrink-0 snap-start">
-                            <img src="${url}" class="w-16 h-16 md:w-20 md:h-20 object-cover rounded-lg border border-white/10 cursor-pointer shadow-md transition-colors" style="border-color: ${hsColor}40;" onmouseover="this.style.borderColor='${hsColor}'" onmouseout="this.style.borderColor='rgba(255,255,255,0.1)'" onclick="openFullGallery(${JSON.stringify(galUrls).replace(/"/g, '&quot;')}); event.stopPropagation();">
-                            ${isAdmin ? `<button type="button" title="Eliminar imagen" onclick="adminDeleteGalleryImage('${hs.id}', ${idx}, event)" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-lg border border-red-300 z-10"><i class="fas fa-times"></i></button>` : ''}
-                        </div>`;
-                    });
-                    if (isAdmin) {
-                        galleryHTML += `<button type="button" title="Insertar imágenes" onclick="adminPickGalleryImages('${hs.id}', event)" class="shrink-0 w-16 h-16 md:w-20 md:h-20 rounded-lg border-2 border-dashed border-indigo-400/60 hover:border-indigo-300 hover:bg-indigo-500/10 text-indigo-300 flex flex-col items-center justify-center gap-1 text-[10px] font-bold transition-colors"><i class="fas fa-plus text-sm"></i>Añadir</button>`;
-                    }
-                    galleryHTML += `</div>`;
-                }
+                const galleryHTML = publicGalleryHTML(hs, hsColor);
 
                 const card = document.createElement('div');
                 card.className = 'glass bg-black/50 border border-white/10 rounded-xl p-3 md:p-4 transition-colors cursor-pointer shadow-lg group';
@@ -1570,6 +1943,7 @@
                 $('hrEscenas').classList.add('hidden');
                 $('sectionMedidores').classList.add('hidden');
                 $('hrMedidores').classList.add('hidden');
+                ['sectionAcuiferos','hrAcuiferos','sectionDispensadores','hrDispensadores'].forEach(id => $(id).classList.add('hidden'));
                 $('sectionLineas').classList.add('hidden');
                 $('hrLineas').classList.add('hidden');
             } else {
@@ -1578,6 +1952,7 @@
                 $('hrEscenas').classList.remove('hidden');
                 $('sectionMedidores').classList.remove('hidden');
                 $('hrMedidores').classList.remove('hidden');
+                ['sectionAcuiferos','hrAcuiferos','sectionDispensadores','hrDispensadores'].forEach(id => $(id).classList.remove('hidden'));
                 $('sectionLineas').classList.remove('hidden');
                 $('hrLineas').classList.remove('hidden');
             }
